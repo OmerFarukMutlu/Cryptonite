@@ -1,7 +1,6 @@
 if(NOT TARGET react-native-reanimated::reanimated)
-add_library(react-native-reanimated::reanimated SHARED IMPORTED)
+add_library(react-native-reanimated::reanimated INTERFACE IMPORTED)
 set_target_properties(react-native-reanimated::reanimated PROPERTIES
-    IMPORTED_LOCATION "C:/Users/faruk/Cryptonite/node_modules/react-native-reanimated/android/build/intermediates/cxx/Debug/475293l9/obj/x86_64/libreanimated.so"
     INTERFACE_INCLUDE_DIRECTORIES "C:/Users/faruk/Cryptonite/node_modules/react-native-reanimated/android/build/prefab-headers/reanimated"
     INTERFACE_LINK_LIBRARIES ""
 )

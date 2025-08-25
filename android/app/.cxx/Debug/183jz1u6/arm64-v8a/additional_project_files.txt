@@ -1,3 +1,10 @@
+C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\rnclipboard_autolinked_build\CMakeFiles\react_codegen_rnclipboard.dir\react\renderer\components\rnclipboard\ComponentDescriptors.cpp.o
+C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\rnclipboard_autolinked_build\CMakeFiles\react_codegen_rnclipboard.dir\react\renderer\components\rnclipboard\EventEmitters.cpp.o
+C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\rnclipboard_autolinked_build\CMakeFiles\react_codegen_rnclipboard.dir\react\renderer\components\rnclipboard\Props.cpp.o
+C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\rnclipboard_autolinked_build\CMakeFiles\react_codegen_rnclipboard.dir\react\renderer\components\rnclipboard\ShadowNodes.cpp.o
+C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\rnclipboard_autolinked_build\CMakeFiles\react_codegen_rnclipboard.dir\react\renderer\components\rnclipboard\States.cpp.o
+C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\rnclipboard_autolinked_build\CMakeFiles\react_codegen_rnclipboard.dir\react\renderer\components\rnclipboard\rnclipboardJSI-generated.cpp.o
+C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\rnclipboard_autolinked_build\CMakeFiles\react_codegen_rnclipboard.dir\rnclipboard-generated.cpp.o
 C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\rngesturehandler_codegen_autolinked_build\CMakeFiles\react_codegen_rngesturehandler_codegen.dir\react\renderer\components\rngesturehandler_codegen\ComponentDescriptors.cpp.o
 C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\rngesturehandler_codegen_autolinked_build\CMakeFiles\react_codegen_rngesturehandler_codegen.dir\react\renderer\components\rngesturehandler_codegen\EventEmitters.cpp.o
 C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\rngesturehandler_codegen_autolinked_build\CMakeFiles\react_codegen_rngesturehandler_codegen.dir\react\renderer\components\rngesturehandler_codegen\Props.cpp.o
@@ -12,6 +19,13 @@ C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\rnreanimated
 C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\rnreanimated_autolinked_build\CMakeFiles\react_codegen_rnreanimated.dir\react\renderer\components\rnreanimated\States.cpp.o
 C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\rnreanimated_autolinked_build\CMakeFiles\react_codegen_rnreanimated.dir\react\renderer\components\rnreanimated\rnreanimatedJSI-generated.cpp.o
 C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\rnreanimated_autolinked_build\CMakeFiles\react_codegen_rnreanimated.dir\rnreanimated-generated.cpp.o
+C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\RNVectorIconsSpec_autolinked_build\CMakeFiles\react_codegen_RNVectorIconsSpec.dir\RNVectorIconsSpec-generated.cpp.o
+C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\RNVectorIconsSpec_autolinked_build\CMakeFiles\react_codegen_RNVectorIconsSpec.dir\react\renderer\components\RNVectorIconsSpec\ComponentDescriptors.cpp.o
+C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\RNVectorIconsSpec_autolinked_build\CMakeFiles\react_codegen_RNVectorIconsSpec.dir\react\renderer\components\RNVectorIconsSpec\EventEmitters.cpp.o
+C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\RNVectorIconsSpec_autolinked_build\CMakeFiles\react_codegen_RNVectorIconsSpec.dir\react\renderer\components\RNVectorIconsSpec\Props.cpp.o
+C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\RNVectorIconsSpec_autolinked_build\CMakeFiles\react_codegen_RNVectorIconsSpec.dir\react\renderer\components\RNVectorIconsSpec\RNVectorIconsSpecJSI-generated.cpp.o
+C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\RNVectorIconsSpec_autolinked_build\CMakeFiles\react_codegen_RNVectorIconsSpec.dir\react\renderer\components\RNVectorIconsSpec\ShadowNodes.cpp.o
+C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\RNVectorIconsSpec_autolinked_build\CMakeFiles\react_codegen_RNVectorIconsSpec.dir\react\renderer\components\RNVectorIconsSpec\States.cpp.o
 C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\rnworklets_autolinked_build\CMakeFiles\react_codegen_rnworklets.dir\react\renderer\components\rnworklets\ComponentDescriptors.cpp.o
 C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\rnworklets_autolinked_build\CMakeFiles\react_codegen_rnworklets.dir\react\renderer\components\rnworklets\EventEmitters.cpp.o
 C:\Users\faruk\Cryptonite\android\app\.cxx\Debug\183jz1u6\arm64-v8a\rnworklets_autolinked_build\CMakeFiles\react_codegen_rnworklets.dir\react\renderer\components\rnworklets\Props.cpp.o

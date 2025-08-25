@@ -1,9 +1,11 @@
 {
   "buildFiles": [
+    "C:\\Users\\faruk\\Cryptonite\\node_modules\\@react-native-clipboard\\clipboard\\android\\build\\generated\\source\\codegen\\jni\\CMakeLists.txt",
     "C:\\Users\\faruk\\Cryptonite\\node_modules\\react-native-gesture-handler\\android\\build\\generated\\source\\codegen\\jni\\CMakeLists.txt",
     "C:\\Users\\faruk\\Cryptonite\\node_modules\\react-native-reanimated\\android\\build\\generated\\source\\codegen\\jni\\CMakeLists.txt",
     "C:\\Users\\faruk\\Cryptonite\\node_modules\\react-native-safe-area-context\\android\\src\\main\\jni\\CMakeLists.txt",
     "C:\\Users\\faruk\\Cryptonite\\node_modules\\react-native-screens\\android\\src\\main\\jni\\CMakeLists.txt",
+    "C:\\Users\\faruk\\Cryptonite\\node_modules\\react-native-vector-icons\\android\\build\\generated\\source\\codegen\\jni\\CMakeLists.txt",
     "C:\\Users\\faruk\\Cryptonite\\node_modules\\react-native-worklets\\android\\build\\generated\\source\\codegen\\jni\\CMakeLists.txt",
     "C:\\Users\\faruk\\Cryptonite\\node_modules\\react-native\\ReactAndroid\\cmake-utils\\default-app-setup\\CMakeLists.txt"
   ],
@@ -22,6 +24,16 @@
     "{LIST_OF_TARGETS_TO_BUILD}"
   ],
   "libraries": {
+    "react_codegen_rnclipboard::@6385240493dfcaf22ab7": {
+      "artifactName": "react_codegen_rnclipboard",
+      "abi": "x86_64",
+      "runtimeFiles": []
+    },
+    "react_codegen_RNVectorIconsSpec::@479809fae146501fd34d": {
+      "artifactName": "react_codegen_RNVectorIconsSpec",
+      "abi": "x86_64",
+      "runtimeFiles": []
+    },
     "react_codegen_rnreanimated::@8afabad14bfffa3f8b9a": {
       "artifactName": "react_codegen_rnreanimated",
       "abi": "x86_64",

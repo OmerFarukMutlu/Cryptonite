@@ -1,18 +1,27 @@
-import React, { useState } from "react";
+// screens/LoginScreen.js
+import React, { useState, useContext } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from "react-native";
+import { ThemeContext } from "../theme/ThemeContext";
+import { iconSize } from "../theme/theme";
 
-export default function LoginScreen({ navigation, theme }) {
-  const [identifier, setIdentifier] = useState(""); // email veya username olabilir
+export default function LoginScreen({ navigation }) {
+  const { theme } = useContext(ThemeContext);
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+
+  const handleLogin = () => {
+    // 📌 Normalde burada backend doğrulaması yapılır
+    // Eğer kullanıcı adı + şifre doğruysa:
+    navigation.navigate("VerifyCode", { from: "login" });
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      
       {/* Logo ve yazı yan yana */}
       <View style={styles.logoContainer}>
-        <Image 
-          source={require("../assets/icons/shield.png")} 
-          style={styles.logoIcon} 
+        <Image
+          source={require("../assets/icons/shield.png")}
+          style={styles.logoIcon}
         />
         <Text style={[styles.logo, { color: theme.colors.primary }]}>
           Cryptonite
@@ -21,7 +30,7 @@ export default function LoginScreen({ navigation, theme }) {
 
       {/* Email veya Username alanı */}
       <TextInput
-        placeholder="Email and Username"
+        placeholder="Email Veya Kullanıcı Adı"
         placeholderTextColor={theme.colors.border}
         style={[
           styles.input,
@@ -33,7 +42,7 @@ export default function LoginScreen({ navigation, theme }) {
 
       {/* Şifre alanı */}
       <TextInput
-        placeholder="Password"
+        placeholder="Şifre"
         placeholderTextColor={theme.colors.border}
         style={[
           styles.input,
@@ -45,13 +54,12 @@ export default function LoginScreen({ navigation, theme }) {
       />
 
       {/* Login butonu */}
-      <TouchableOpacity 
-  style={[styles.button, { backgroundColor: theme.colors.primary }]}
-  onPress={() => navigation.navigate("Vault")}   // 👈 buraya yönlendirme
->
-  <Text style={styles.buttonText}>Login</Text>
-</TouchableOpacity>
-
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: theme.colors.primary }]}
+        onPress={handleLogin}
+      >
+        <Text style={styles.buttonText}>Giriş Yap</Text>
+      </TouchableOpacity>
 
       {/* Register yönlendirme */}
       <TouchableOpacity onPress={() => navigation.navigate("Register")}>
@@ -66,10 +74,10 @@ export default function LoginScreen({ navigation, theme }) {
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
   logoContainer: { flexDirection: "row", alignItems: "center", marginBottom: 40 },
-  logoIcon: { width: 32, height: 32, resizeMode: "contain" },
-  logo: { fontSize: 30, fontWeight: "bold", marginLeft: 10 },
-  input: { width: "100%", borderWidth: 1, padding: 12, marginBottom: 15, borderRadius: 8 },
-  button: { width: "100%", padding: 15, borderRadius: 8, alignItems: "center" },
-  buttonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
-  link: { marginTop: 15, fontSize: 20 },
+  logoIcon: { width: iconSize + 12, height: iconSize + 12, resizeMode: "contain" },
+  logo: { fontSize: 32, fontWeight: "bold", marginLeft: 12 },
+  input: { width: "100%", borderWidth: 1, padding: 14, marginBottom: 15, borderRadius: 8, fontSize: 16 },
+  button: { width: "100%", padding: 16, borderRadius: 8, alignItems: "center" },
+  buttonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
+  link: { marginTop: 15, fontSize: 18 },
 });

@@ -1,7 +1,6 @@
 if(NOT TARGET react-native-worklets::worklets)
-add_library(react-native-worklets::worklets SHARED IMPORTED)
+add_library(react-native-worklets::worklets INTERFACE IMPORTED)
 set_target_properties(react-native-worklets::worklets PROPERTIES
-    IMPORTED_LOCATION "C:/Users/faruk/Cryptonite/node_modules/react-native-worklets/android/build/intermediates/cxx/Debug/3s26p556/obj/arm64-v8a/libworklets.so"
     INTERFACE_INCLUDE_DIRECTORIES "C:/Users/faruk/Cryptonite/node_modules/react-native-worklets/android/build/prefab-headers/worklets"
     INTERFACE_LINK_LIBRARIES ""
 )

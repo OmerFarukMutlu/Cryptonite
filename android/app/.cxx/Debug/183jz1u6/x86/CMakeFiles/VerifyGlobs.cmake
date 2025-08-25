@@ -12,6 +12,31 @@ if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   file(TOUCH_NOCREATE "C:/Users/faruk/Cryptonite/android/app/.cxx/Debug/183jz1u6/x86/CMakeFiles/cmake.verify_globs")
 endif()
 
+# react_codegen_SRCS at C:/Users/faruk/Cryptonite/node_modules/@react-native-clipboard/clipboard/android/build/generated/source/codegen/jni/CMakeLists.txt:9 (file)
+file(GLOB NEW_GLOB LIST_DIRECTORIES true "C:/Users/faruk/Cryptonite/node_modules/@react-native-clipboard/clipboard/android/build/generated/source/codegen/jni/*.cpp")
+set(OLD_GLOB
+  "C:/Users/faruk/Cryptonite/node_modules/@react-native-clipboard/clipboard/android/build/generated/source/codegen/jni/rnclipboard-generated.cpp"
+  )
+if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
+  message("-- GLOB mismatch!")
+  file(TOUCH_NOCREATE "C:/Users/faruk/Cryptonite/android/app/.cxx/Debug/183jz1u6/x86/CMakeFiles/cmake.verify_globs")
+endif()
+
+# react_codegen_SRCS at C:/Users/faruk/Cryptonite/node_modules/@react-native-clipboard/clipboard/android/build/generated/source/codegen/jni/CMakeLists.txt:9 (file)
+file(GLOB NEW_GLOB LIST_DIRECTORIES true "C:/Users/faruk/Cryptonite/node_modules/@react-native-clipboard/clipboard/android/build/generated/source/codegen/jni/react/renderer/components/rnclipboard/*.cpp")
+set(OLD_GLOB
+  "C:/Users/faruk/Cryptonite/node_modules/@react-native-clipboard/clipboard/android/build/generated/source/codegen/jni/react/renderer/components/rnclipboard/ComponentDescriptors.cpp"
+  "C:/Users/faruk/Cryptonite/node_modules/@react-native-clipboard/clipboard/android/build/generated/source/codegen/jni/react/renderer/components/rnclipboard/EventEmitters.cpp"
+  "C:/Users/faruk/Cryptonite/node_modules/@react-native-clipboard/clipboard/android/build/generated/source/codegen/jni/react/renderer/components/rnclipboard/Props.cpp"
+  "C:/Users/faruk/Cryptonite/node_modules/@react-native-clipboard/clipboard/android/build/generated/source/codegen/jni/react/renderer/components/rnclipboard/ShadowNodes.cpp"
+  "C:/Users/faruk/Cryptonite/node_modules/@react-native-clipboard/clipboard/android/build/generated/source/codegen/jni/react/renderer/components/rnclipboard/States.cpp"
+  "C:/Users/faruk/Cryptonite/node_modules/@react-native-clipboard/clipboard/android/build/generated/source/codegen/jni/react/renderer/components/rnclipboard/rnclipboardJSI-generated.cpp"
+  )
+if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
+  message("-- GLOB mismatch!")
+  file(TOUCH_NOCREATE "C:/Users/faruk/Cryptonite/android/app/.cxx/Debug/183jz1u6/x86/CMakeFiles/cmake.verify_globs")
+endif()
+
 # react_codegen_SRCS at C:/Users/faruk/Cryptonite/node_modules/react-native-gesture-handler/android/build/generated/source/codegen/jni/CMakeLists.txt:9 (file)
 file(GLOB NEW_GLOB LIST_DIRECTORIES true "C:/Users/faruk/Cryptonite/node_modules/react-native-gesture-handler/android/build/generated/source/codegen/jni/*.cpp")
 set(OLD_GLOB
@@ -155,6 +180,31 @@ set(OLD_GLOB
   "C:/Users/faruk/Cryptonite/node_modules/react-native-screens/android/src/main/jni/../../../build/generated/source/codegen/jni/react/renderer/components/rnscreens/ShadowNodes.cpp"
   "C:/Users/faruk/Cryptonite/node_modules/react-native-screens/android/src/main/jni/../../../build/generated/source/codegen/jni/react/renderer/components/rnscreens/States.cpp"
   "C:/Users/faruk/Cryptonite/node_modules/react-native-screens/android/src/main/jni/../../../build/generated/source/codegen/jni/react/renderer/components/rnscreens/rnscreensJSI-generated.cpp"
+  )
+if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
+  message("-- GLOB mismatch!")
+  file(TOUCH_NOCREATE "C:/Users/faruk/Cryptonite/android/app/.cxx/Debug/183jz1u6/x86/CMakeFiles/cmake.verify_globs")
+endif()
+
+# react_codegen_SRCS at C:/Users/faruk/Cryptonite/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/CMakeLists.txt:9 (file)
+file(GLOB NEW_GLOB LIST_DIRECTORIES true "C:/Users/faruk/Cryptonite/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/*.cpp")
+set(OLD_GLOB
+  "C:/Users/faruk/Cryptonite/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/RNVectorIconsSpec-generated.cpp"
+  )
+if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
+  message("-- GLOB mismatch!")
+  file(TOUCH_NOCREATE "C:/Users/faruk/Cryptonite/android/app/.cxx/Debug/183jz1u6/x86/CMakeFiles/cmake.verify_globs")
+endif()
+
+# react_codegen_SRCS at C:/Users/faruk/Cryptonite/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/CMakeLists.txt:9 (file)
+file(GLOB NEW_GLOB LIST_DIRECTORIES true "C:/Users/faruk/Cryptonite/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/react/renderer/components/RNVectorIconsSpec/*.cpp")
+set(OLD_GLOB
+  "C:/Users/faruk/Cryptonite/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/react/renderer/components/RNVectorIconsSpec/ComponentDescriptors.cpp"
+  "C:/Users/faruk/Cryptonite/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/react/renderer/components/RNVectorIconsSpec/EventEmitters.cpp"
+  "C:/Users/faruk/Cryptonite/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/react/renderer/components/RNVectorIconsSpec/Props.cpp"
+  "C:/Users/faruk/Cryptonite/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/react/renderer/components/RNVectorIconsSpec/RNVectorIconsSpecJSI-generated.cpp"
+  "C:/Users/faruk/Cryptonite/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/react/renderer/components/RNVectorIconsSpec/ShadowNodes.cpp"
+  "C:/Users/faruk/Cryptonite/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/react/renderer/components/RNVectorIconsSpec/States.cpp"
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")

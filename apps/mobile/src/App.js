@@ -1,11 +1,11 @@
 import React from "react";
-import { useColorScheme } from "react-native"; 
 import AppNavigator from "./navigation/AppNavigator";
-import { lightTheme, darkTheme } from "./theme/theme";
+import { ThemeProvider } from "./theme/ThemeContext";
 
 export default function App() {
-  const colorScheme = useColorScheme(); 
-  const theme = colorScheme === "dark" ? darkTheme : lightTheme;
-
-  return <AppNavigator theme={theme} />;
+  return (
+    <ThemeProvider>
+      <AppNavigator />
+    </ThemeProvider>
+  );
 }

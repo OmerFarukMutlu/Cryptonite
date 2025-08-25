@@ -1,7 +1,12 @@
-import React, { useState } from "react";
+// screens/RegisterScreen.js
+import React, { useState, useContext } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from "react-native";
+import { ThemeContext } from "../theme/ThemeContext";
+import { iconSize } from "../theme/theme";
 
-export default function RegisterScreen({ navigation, theme }) {
+export default function RegisterScreen({ navigation }) {
+  const { theme } = useContext(ThemeContext);
+
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [phone, setPhone] = useState("");
@@ -11,12 +16,11 @@ export default function RegisterScreen({ navigation, theme }) {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-
       {/* Logo ve yazı yan yana */}
       <View style={styles.logoContainer}>
-        <Image 
-          source={require("../assets/icons/shield.png")} 
-          style={styles.logoIcon}
+        <Image
+          source={require("../assets/icons/shield.png")}
+          style={styles.logoIcon} // ✅ tintColor kaldırıldı
         />
         <Text style={[styles.logo, { color: theme.colors.primary }]}>
           Cryptonite
@@ -25,7 +29,7 @@ export default function RegisterScreen({ navigation, theme }) {
 
       {/* Name */}
       <TextInput
-        placeholder="Name"
+        placeholder="Ad"
         placeholderTextColor={theme.colors.border}
         style={[
           styles.input,
@@ -37,7 +41,7 @@ export default function RegisterScreen({ navigation, theme }) {
 
       {/* Username */}
       <TextInput
-        placeholder="Username"
+        placeholder="Kullanıcı Adı"
         placeholderTextColor={theme.colors.border}
         style={[
           styles.input,
@@ -47,9 +51,9 @@ export default function RegisterScreen({ navigation, theme }) {
         onChangeText={setUsername}
       />
 
-      {/* Phone Number */}
+      {/* Phone */}
       <TextInput
-        placeholder="Phone Number"
+        placeholder="Telefon Numarası"
         placeholderTextColor={theme.colors.border}
         style={[
           styles.input,
@@ -75,7 +79,7 @@ export default function RegisterScreen({ navigation, theme }) {
 
       {/* Password */}
       <TextInput
-        placeholder="Password"
+        placeholder="Şifre"
         placeholderTextColor={theme.colors.border}
         style={[
           styles.input,
@@ -88,7 +92,7 @@ export default function RegisterScreen({ navigation, theme }) {
 
       {/* Confirm Password */}
       <TextInput
-        placeholder="Confirm Password"
+        placeholder="Şifre Onayı"
         placeholderTextColor={theme.colors.border}
         style={[
           styles.input,
@@ -101,7 +105,7 @@ export default function RegisterScreen({ navigation, theme }) {
 
       {/* Register Button */}
       <TouchableOpacity style={[styles.button, { backgroundColor: theme.colors.primary }]}>
-        <Text style={styles.buttonText}>Register</Text>
+        <Text style={styles.buttonText}>Kayıt Ol</Text>
       </TouchableOpacity>
 
       {/* Login yönlendirme */}
@@ -117,10 +121,10 @@ export default function RegisterScreen({ navigation, theme }) {
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
   logoContainer: { flexDirection: "row", alignItems: "center", marginBottom: 40 },
-  logoIcon: { width: 40, height: 40, resizeMode: "contain" },
-  logo: { fontSize: 30, fontWeight: "bold", marginLeft: 10 },
-  input: { width: "100%", borderWidth: 1, padding: 12, marginBottom: 15, borderRadius: 8 },
-  button: { width: "100%", padding: 15, borderRadius: 8, alignItems: "center" },
-  buttonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
-  link: { marginTop: 15, fontSize: 20 },
+  logoIcon: { width: iconSize + 12, height: iconSize + 12, resizeMode: "contain" }, // ✅ orijinal renk
+  logo: { fontSize: 32, fontWeight: "bold", marginLeft: 12 },
+  input: { width: "100%", borderWidth: 1, padding: 14, marginBottom: 15, borderRadius: 8, fontSize: 16 },
+  button: { width: "100%", padding: 16, borderRadius: 8, alignItems: "center" },
+  buttonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
+  link: { marginTop: 15, fontSize: 18 },
 });
