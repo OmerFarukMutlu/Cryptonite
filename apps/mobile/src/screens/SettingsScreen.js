@@ -15,7 +15,6 @@ export default function SettingsScreen({ navigation }) {
   const { theme } = useContext(ThemeContext);
   const [username, setUsername] = useState("testuser");
   const [email, setEmail] = useState("testuser@mail.com");
-  const [password, setPassword] = useState("123456");
   const [phone, setPhone] = useState("05555555555");
 
   const handleSave = () => {
@@ -34,10 +33,13 @@ export default function SettingsScreen({ navigation }) {
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* Üst kısım: settings ikonu solda, yanında Ayarlar yazısı */}
       <View style={styles.headerRow}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <View style={styles.rowCenter}>
           <Image
             source={require("../assets/icons/settings.png")}
-            style={{ width: 26, height: 26, resizeMode: "contain", marginRight: 8 }}
+            style={[
+              styles.settingsIcon,
+              { tintColor: theme.dark ? theme.colors.button.primary : theme.colors.text },
+            ]}
           />
           <Text style={[styles.title, { color: theme.colors.text }]}>Ayarlar</Text>
         </View>
@@ -68,19 +70,6 @@ export default function SettingsScreen({ navigation }) {
         keyboardType="email-address"
       />
 
-      {/* Şifre */}
-      <TextInput
-        style={[
-          styles.input,
-          { borderColor: theme.colors.primary, color: theme.colors.text },
-        ]}
-        value={password}
-        onChangeText={setPassword}
-        placeholder="Şifre"
-        placeholderTextColor={theme.colors.border}
-        secureTextEntry
-      />
-
       {/* Telefon */}
       <TextInput
         style={[
@@ -96,15 +85,26 @@ export default function SettingsScreen({ navigation }) {
 
       {/* Kaydet */}
       <TouchableOpacity
-        style={[styles.saveButton, { backgroundColor: theme.colors.primary }]}
+        style={[styles.button, { backgroundColor: theme.colors.button.primary }]}
         onPress={handleSave}
       >
-        <Text style={styles.saveText}>Kaydet</Text>
+        <Text style={styles.buttonText}>Kaydet</Text>
+      </TouchableOpacity>
+
+      {/* Şifre Değiştir */}
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: theme.colors.button.warning }]}
+        onPress={() => navigation.navigate("ChangePassword")}
+      >
+        <Text style={styles.buttonText}>Şifre Değiştir</Text>
       </TouchableOpacity>
 
       {/* Çıkış */}
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Çıkış Yap</Text>
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: theme.colors.button.danger }]}
+        onPress={handleLogout}
+      >
+        <Text style={styles.buttonText}>Çıkış Yap</Text>
       </TouchableOpacity>
     </View>
   );
@@ -117,6 +117,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 20,
   },
+  rowCenter: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  settingsIcon: {
+    width: 26,
+    height: 26,
+    resizeMode: "contain",
+    marginRight: 8,
+  },
   title: { fontSize: 22, fontWeight: "bold" },
   input: {
     borderWidth: 1,
@@ -125,18 +135,11 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     fontSize: 16,
   },
-  saveButton: {
+  button: {
     padding: 14,
     borderRadius: 8,
     alignItems: "center",
     marginBottom: 15,
   },
-  saveText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
-  logoutButton: {
-    backgroundColor: "#E53935",
-    padding: 14,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  logoutText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
 });

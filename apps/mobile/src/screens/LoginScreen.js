@@ -11,13 +11,15 @@ export default function LoginScreen({ navigation }) {
 
   const handleLogin = () => {
     // 📌 Normalde burada backend doğrulaması yapılır
-    // Eğer kullanıcı adı + şifre doğruysa:
-    navigation.navigate("VerifyCode", { from: "login" });
+    // Eğer login başarılıysa → Vault ekranına git
+    navigation.replace("Vault");
+    // Eğer login sırasında SMS doğrulama gerekirse:
+    // navigation.navigate("VerifyCode", { from: "login" });
   };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      {/* Logo ve yazı yan yana */}
+      {/* Logo */}
       <View style={styles.logoContainer}>
         <Image
           source={require("../assets/icons/shield.png")}
@@ -28,32 +30,40 @@ export default function LoginScreen({ navigation }) {
         </Text>
       </View>
 
-      {/* Email veya Username alanı */}
+      {/* Email veya Username */}
       <TextInput
-        placeholder="Email Veya Kullanıcı Adı"
+        placeholder="Email veya Kullanıcı Adı"
         placeholderTextColor={theme.colors.border}
         style={[
           styles.input,
-          { backgroundColor: theme.colors.card, borderColor: theme.colors.primary, color: theme.colors.text }
+          {
+            backgroundColor: theme.colors.card,
+            borderColor: theme.colors.primary,
+            color: theme.colors.text,
+          },
         ]}
         value={identifier}
         onChangeText={setIdentifier}
       />
 
-      {/* Şifre alanı */}
+      {/* Şifre */}
       <TextInput
         placeholder="Şifre"
         placeholderTextColor={theme.colors.border}
         style={[
           styles.input,
-          { backgroundColor: theme.colors.card, borderColor: theme.colors.primary, color: theme.colors.text }
+          {
+            backgroundColor: theme.colors.card,
+            borderColor: theme.colors.primary,
+            color: theme.colors.text,
+          },
         ]}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
 
-      {/* Login butonu */}
+      {/* Giriş Yap */}
       <TouchableOpacity
         style={[styles.button, { backgroundColor: theme.colors.primary }]}
         onPress={handleLogin}
@@ -61,7 +71,14 @@ export default function LoginScreen({ navigation }) {
         <Text style={styles.buttonText}>Giriş Yap</Text>
       </TouchableOpacity>
 
-      {/* Register yönlendirme */}
+      {/* Şifremi Unuttum */}
+      <TouchableOpacity onPress={() => navigation.navigate("ForgotPassword")}>
+        <Text style={[styles.link, { color: theme.colors.primary, marginTop: 10 }]}>
+          Şifremi Unuttum?
+        </Text>
+      </TouchableOpacity>
+
+      {/* Kayıt Ol */}
       <TouchableOpacity onPress={() => navigation.navigate("Register")}>
         <Text style={[styles.link, { color: theme.colors.primary }]}>
           Hesabın yok mu? Kayıt Ol
@@ -76,7 +93,14 @@ const styles = StyleSheet.create({
   logoContainer: { flexDirection: "row", alignItems: "center", marginBottom: 40 },
   logoIcon: { width: iconSize + 12, height: iconSize + 12, resizeMode: "contain" },
   logo: { fontSize: 32, fontWeight: "bold", marginLeft: 12 },
-  input: { width: "100%", borderWidth: 1, padding: 14, marginBottom: 15, borderRadius: 8, fontSize: 16 },
+  input: {
+    width: "100%",
+    borderWidth: 1,
+    padding: 14,
+    marginBottom: 15,
+    borderRadius: 8,
+    fontSize: 16,
+  },
   button: { width: "100%", padding: 16, borderRadius: 8, alignItems: "center" },
   buttonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
   link: { marginTop: 15, fontSize: 18 },

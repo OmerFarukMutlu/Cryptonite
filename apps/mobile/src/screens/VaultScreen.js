@@ -34,10 +34,7 @@ export default function VaultScreen() {
 
   // 🔹 Şifre göster/gizle
   const togglePassword = (id) => {
-    setVisiblePasswords((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
+    setVisiblePasswords((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   // 🔹 Panoya kopyala
@@ -101,6 +98,12 @@ export default function VaultScreen() {
     setFilteredItems(results);
   };
 
+  // 🔹 Arama sıfırla
+  const clearSearch = () => {
+    setSearch("");
+    setFilteredItems(vaultItems);
+  };
+
   // 🔹 Kart render
   const renderItem = ({ item }) => {
     const isEmail = item.username.includes("@");
@@ -110,21 +113,26 @@ export default function VaultScreen() {
       : require("../assets/icons/user.png");
 
     return (
-      <View style={[styles.card, { borderColor: theme.colors.primary }]}>
+      <View
+        style={[
+          styles.card,
+          { borderColor: theme.colors.primary, backgroundColor: theme.colors.card },
+        ]}
+      >
         {/* Bilgiler */}
-        <View style={{ alignItems: "center" }}>
+        <View style={styles.center}>
           <Text style={[styles.site, { color: theme.colors.text }]}>{item.site}</Text>
 
-          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
+          <View style={styles.row}>
             <Image source={icon} style={styles.smallIcon} />
-            <Text style={[styles.user, { color: theme.colors.text, marginLeft: 6 }]}>
+            <Text style={[styles.user, { color: theme.colors.text }, styles.ml6]}>
               {item.username}
             </Text>
           </View>
 
-          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
+          <View style={styles.row}>
             <Image source={require("../assets/icons/lock2.png")} style={styles.smallIcon} />
-            <Text style={[styles.pass, { color: theme.colors.text, marginLeft: 6 }]}>
+            <Text style={[styles.pass, { color: theme.colors.text }, styles.ml6]}>
               {visiblePasswords[item.id] ? item.password : "********"}
             </Text>
           </View>
@@ -135,11 +143,9 @@ export default function VaultScreen() {
           <TouchableOpacity onPress={() => copyToClipboard(item.username, label)}>
             <Image source={icon} style={styles.icon} />
           </TouchableOpacity>
-
           <TouchableOpacity onPress={() => copyToClipboard(item.password, "Şifre")}>
             <Image source={require("../assets/icons/key.png")} style={styles.icon} />
           </TouchableOpacity>
-
           <TouchableOpacity onPress={() => togglePassword(item.id)}>
             <Image
               source={
@@ -150,11 +156,9 @@ export default function VaultScreen() {
               style={styles.icon}
             />
           </TouchableOpacity>
-
           <TouchableOpacity onPress={() => openEditModal(item)}>
             <Image source={require("../assets/icons/edit.png")} style={styles.icon} />
           </TouchableOpacity>
-
           <TouchableOpacity onPress={() => deleteItem(item.id)}>
             <Image source={require("../assets/icons/delete.png")} style={styles.icon} />
           </TouchableOpacity>
@@ -167,27 +171,43 @@ export default function VaultScreen() {
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* Başlık */}
       <View style={styles.header}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <View style={styles.row}>
           <Image source={require("../assets/icons/lock.png")} style={styles.lockIcon} />
           <Text style={[styles.headerText, { color: theme.colors.text }]}>Vault</Text>
         </View>
 
-        {/* ➕ Ekle butonu */}
-        <TouchableOpacity style={styles.addButton} onPress={() => setAddModalVisible(true)}>
+        {/* ✅ Ekle butonu tema uyumlu */}
+        <TouchableOpacity
+          style={[
+            styles.addButton,
+            { backgroundColor: theme.colors.button.primary },
+          ]}
+          onPress={() => setAddModalVisible(true)}
+        >
           <Text style={styles.addButtonText}>+ Ekle</Text>
         </TouchableOpacity>
       </View>
 
-      {/* 🔍 Arama Çubuğu */}
-      <TextInput
-        style={[styles.searchInput, { borderColor: theme.colors.primary, color: theme.colors.text }]}
-        placeholder="Ara..."
-        placeholderTextColor={theme.colors.border}
-        value={search}
-        onChangeText={setSearch}
-        returnKeyType="search"
-        onSubmitEditing={handleSearch}
-      />
+      {/* 🔍 Arama Çubuğu + Temizle */}
+      <View style={styles.searchRow}>
+        <TextInput
+          style={[
+            styles.searchInput,
+            { borderColor: theme.colors.primary, color: theme.colors.text },
+          ]}
+          placeholder="Ara..."
+          placeholderTextColor={theme.colors.border}
+          value={search}
+          onChangeText={setSearch}
+          returnKeyType="search"
+          onSubmitEditing={handleSearch}
+        />
+        {search.length > 0 && (
+          <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
+            <Text style={styles.clearButtonText}>❌</Text>
+          </TouchableOpacity>
+        )}
+      </View>
 
       <FlatList
         data={filteredItems}
@@ -202,21 +222,30 @@ export default function VaultScreen() {
             <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Yeni Kayıt Ekle</Text>
 
             <TextInput
-              style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
+              style={[
+                styles.input,
+                { borderColor: theme.colors.primary, color: theme.colors.text },
+              ]}
               placeholder="Site"
               placeholderTextColor={theme.colors.border}
               value={newItem.site}
               onChangeText={(text) => setNewItem((prev) => ({ ...prev, site: text }))}
             />
             <TextInput
-              style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
+              style={[
+                styles.input,
+                { borderColor: theme.colors.primary, color: theme.colors.text },
+              ]}
               placeholder="Kullanıcı Adı / Email"
               placeholderTextColor={theme.colors.border}
               value={newItem.username}
               onChangeText={(text) => setNewItem((prev) => ({ ...prev, username: text }))}
             />
             <TextInput
-              style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
+              style={[
+                styles.input,
+                { borderColor: theme.colors.primary, color: theme.colors.text },
+              ]}
               placeholder="Şifre"
               placeholderTextColor={theme.colors.border}
               secureTextEntry
@@ -226,13 +255,13 @@ export default function VaultScreen() {
 
             <View style={styles.modalActions}>
               <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: "gray" }]}
+                style={[styles.modalButton, { backgroundColor: theme.colors.button.danger }]}
                 onPress={() => setAddModalVisible(false)}
               >
                 <Text style={styles.modalButtonText}>İptal</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: "green" }]}
+                style={[styles.modalButton, { backgroundColor: theme.colors.button.primary }]}
                 onPress={addItem}
               >
                 <Text style={styles.modalButtonText}>Ekle</Text>
@@ -249,37 +278,52 @@ export default function VaultScreen() {
             <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Kaydı Düzenle</Text>
 
             <TextInput
-              style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
+              style={[
+                styles.input,
+                { borderColor: theme.colors.primary, color: theme.colors.text },
+              ]}
               placeholder="Site"
               placeholderTextColor={theme.colors.border}
               value={currentItem?.site}
-              onChangeText={(text) => setCurrentItem((prev) => ({ ...prev, site: text }))}
+              onChangeText={(text) =>
+                setCurrentItem((prev) => ({ ...prev, site: text }))
+              }
             />
             <TextInput
-              style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
+              style={[
+                styles.input,
+                { borderColor: theme.colors.primary, color: theme.colors.text },
+              ]}
               placeholder="Kullanıcı Adı / Email"
               placeholderTextColor={theme.colors.border}
               value={currentItem?.username}
-              onChangeText={(text) => setCurrentItem((prev) => ({ ...prev, username: text }))}
+              onChangeText={(text) =>
+                setCurrentItem((prev) => ({ ...prev, username: text }))
+              }
             />
             <TextInput
-              style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
+              style={[
+                styles.input,
+                { borderColor: theme.colors.primary, color: theme.colors.text },
+              ]}
               placeholder="Şifre"
               placeholderTextColor={theme.colors.border}
               secureTextEntry
               value={currentItem?.password}
-              onChangeText={(text) => setCurrentItem((prev) => ({ ...prev, password: text }))}
+              onChangeText={(text) =>
+                setCurrentItem((prev) => ({ ...prev, password: text }))
+              }
             />
 
             <View style={styles.modalActions}>
               <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: "gray" }]}
+                style={[styles.modalButton, { backgroundColor: theme.colors.button.danger }]}
                 onPress={() => setEditModalVisible(false)}
               >
                 <Text style={styles.modalButtonText}>İptal</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: "green" }]}
+                style={[styles.modalButton, { backgroundColor: theme.colors.button.primary }]}
                 onPress={saveEdit}
               >
                 <Text style={styles.modalButtonText}>Kaydet</Text>
@@ -303,27 +347,28 @@ const styles = StyleSheet.create({
   lockIcon: { width: iconSize + 4, height: iconSize + 4, marginRight: 8 },
   headerText: { fontSize: 24, fontWeight: "bold" },
   addButton: {
-    backgroundColor: "green",
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 10,
   },
   addButtonText: { color: "white", fontWeight: "bold", fontSize: 18 },
 
+  searchRow: { flexDirection: "row", alignItems: "center", marginBottom: 15 },
   searchInput: {
+    flex: 1,
     borderWidth: 1,
     borderRadius: 8,
     padding: 10,
-    marginBottom: 15,
     fontSize: 16,
   },
+  clearButton: { marginLeft: 8 },
+  clearButtonText: { fontSize: 18, color: "red" },
 
   card: {
     padding: 15,
     marginBottom: 10,
     borderWidth: 1,
     borderRadius: 8,
-    backgroundColor: "#fff",
   },
   site: { fontSize: 18, fontWeight: "bold" },
   user: { fontSize: 16 },
@@ -364,4 +409,8 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   modalButtonText: { color: "white", fontWeight: "bold", fontSize: 16 },
+
+  center: { alignItems: "center" },
+  row: { flexDirection: "row", alignItems: "center", marginTop: 4 },
+  ml6: { marginLeft: 6 },
 });
