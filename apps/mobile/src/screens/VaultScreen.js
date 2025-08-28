@@ -1,5 +1,5 @@
 // screens/VaultScreen.js
-import React, { useState, useContext } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import {
   View,
   Text,
@@ -15,13 +15,18 @@ import Clipboard from "@react-native-clipboard/clipboard";
 import { ThemeContext } from "../theme/ThemeContext";
 import { iconSize } from "../theme/theme";
 
-// Örnek veri
+// Firebase
+import { auth, db } from "../firebase/firebaseConfig";
+import { doc, getDoc, deleteDoc } from "firebase/firestore";
+import { deleteUser } from "firebase/auth";
+
+// Örnek veri (geçici)
 const initialVaultItems = [
   { id: "1", site: "gmail.com", username: "testuser@gmail.com", password: "123456" },
   { id: "2", site: "github.com", username: "coder123", password: "abcdef" },
 ];
 
-export default function VaultScreen() {
+export default function VaultScreen({ navigation }) {
   const { theme } = useContext(ThemeContext);
   const [vaultItems, setVaultItems] = useState(initialVaultItems);
   const [visiblePasswords, setVisiblePasswords] = useState({});
@@ -31,6 +36,56 @@ export default function VaultScreen() {
   const [newItem, setNewItem] = useState({ site: "", username: "", password: "" });
   const [search, setSearch] = useState("");
   const [filteredItems, setFilteredItems] = useState(vaultItems);
+  const [loading, setLoading] = useState(true);
+
+  // ✅ Kullanıcı doğrulama kontrolü
+  useEffect(() => {
+    const checkVerification = async () => {
+      try {
+        const user = auth.currentUser;
+        if (!user) {
+          navigation.replace("Login");
+          return;
+        }
+
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (!userDoc.exists()) {
+          navigation.replace("Login");
+          return;
+        }
+
+        const data = userDoc.data();
+        const createdAt = data.createdAt.toDate();
+        const now = new Date();
+        const diff = (now - createdAt) / (1000 * 60 * 60 * 24); // gün farkı
+
+        await user.reload();
+        const isEmailVerified = user.emailVerified;
+
+        if (!isEmailVerified || !data.verified) {
+          if (diff > 2) {
+            // 2 gün geçtiyse hesap sil
+            await deleteDoc(doc(db, "users", user.uid));
+            await deleteUser(user);
+            Alert.alert("Hesap Silindi", "Doğrulama yapılmadığı için hesabın süresi doldu.");
+            navigation.replace("Register");
+            return;
+          } else {
+            // Doğrulama yapılmadı ama süre dolmamış
+            Alert.alert("Doğrulama Gerekli", "Vault’a erişmek için emailini doğrulamalısın.");
+            navigation.replace("VerifyEmailPending");
+            return;
+          }
+        }
+        setLoading(false);
+      } catch (err) {
+        console.error(err);
+        Alert.alert("Hata", err.message);
+        navigation.replace("Login");
+      }
+    };
+    checkVerification();
+  }, [navigation]);
 
   // 🔹 Şifre göster/gizle
   const togglePassword = (id) => {
@@ -167,6 +222,14 @@ export default function VaultScreen() {
     );
   };
 
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text>Kontrol ediliyor...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* Başlık */}
@@ -176,19 +239,16 @@ export default function VaultScreen() {
           <Text style={[styles.headerText, { color: theme.colors.text }]}>Vault</Text>
         </View>
 
-        {/* ✅ Ekle butonu tema uyumlu */}
+        {/* ✅ Ekle butonu */}
         <TouchableOpacity
-          style={[
-            styles.addButton,
-            { backgroundColor: theme.colors.button.primary },
-          ]}
+          style={[styles.addButton, { backgroundColor: theme.colors.button.primary }]}
           onPress={() => setAddModalVisible(true)}
         >
           <Text style={styles.addButtonText}>+ Ekle</Text>
         </TouchableOpacity>
       </View>
 
-      {/* 🔍 Arama Çubuğu + Temizle */}
+      {/* 🔍 Arama */}
       <View style={styles.searchRow}>
         <TextInput
           style={[
@@ -209,50 +269,35 @@ export default function VaultScreen() {
         )}
       </View>
 
-      <FlatList
-        data={filteredItems}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-      />
+      <FlatList data={filteredItems} renderItem={renderItem} keyExtractor={(item) => item.id} />
 
       {/* ➕ Add Modal */}
       <Modal visible={addModalVisible} animationType="slide" transparent>
         <View style={styles.modalContainer}>
           <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
             <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Yeni Kayıt Ekle</Text>
-
             <TextInput
-              style={[
-                styles.input,
-                { borderColor: theme.colors.primary, color: theme.colors.text },
-              ]}
+              style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
               placeholder="Site"
               placeholderTextColor={theme.colors.border}
               value={newItem.site}
               onChangeText={(text) => setNewItem((prev) => ({ ...prev, site: text }))}
             />
             <TextInput
-              style={[
-                styles.input,
-                { borderColor: theme.colors.primary, color: theme.colors.text },
-              ]}
+              style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
               placeholder="Kullanıcı Adı / Email"
               placeholderTextColor={theme.colors.border}
               value={newItem.username}
               onChangeText={(text) => setNewItem((prev) => ({ ...prev, username: text }))}
             />
             <TextInput
-              style={[
-                styles.input,
-                { borderColor: theme.colors.primary, color: theme.colors.text },
-              ]}
+              style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
               placeholder="Şifre"
               placeholderTextColor={theme.colors.border}
               secureTextEntry
               value={newItem.password}
               onChangeText={(text) => setNewItem((prev) => ({ ...prev, password: text }))}
             />
-
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: theme.colors.button.danger }]}
@@ -276,45 +321,28 @@ export default function VaultScreen() {
         <View style={styles.modalContainer}>
           <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
             <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Kaydı Düzenle</Text>
-
             <TextInput
-              style={[
-                styles.input,
-                { borderColor: theme.colors.primary, color: theme.colors.text },
-              ]}
+              style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
               placeholder="Site"
               placeholderTextColor={theme.colors.border}
               value={currentItem?.site}
-              onChangeText={(text) =>
-                setCurrentItem((prev) => ({ ...prev, site: text }))
-              }
+              onChangeText={(text) => setCurrentItem((prev) => ({ ...prev, site: text }))}
             />
             <TextInput
-              style={[
-                styles.input,
-                { borderColor: theme.colors.primary, color: theme.colors.text },
-              ]}
+              style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
               placeholder="Kullanıcı Adı / Email"
               placeholderTextColor={theme.colors.border}
               value={currentItem?.username}
-              onChangeText={(text) =>
-                setCurrentItem((prev) => ({ ...prev, username: text }))
-              }
+              onChangeText={(text) => setCurrentItem((prev) => ({ ...prev, username: text }))}
             />
             <TextInput
-              style={[
-                styles.input,
-                { borderColor: theme.colors.primary, color: theme.colors.text },
-              ]}
+              style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
               placeholder="Şifre"
               placeholderTextColor={theme.colors.border}
               secureTextEntry
               value={currentItem?.password}
-              onChangeText={(text) =>
-                setCurrentItem((prev) => ({ ...prev, password: text }))
-              }
+              onChangeText={(text) => setCurrentItem((prev) => ({ ...prev, password: text }))}
             />
-
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: theme.colors.button.danger }]}
@@ -338,78 +366,29 @@ export default function VaultScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 10,
-  },
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 },
   lockIcon: { width: iconSize + 4, height: iconSize + 4, marginRight: 8 },
   headerText: { fontSize: 24, fontWeight: "bold" },
-  addButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 10,
-  },
+  addButton: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10 },
   addButtonText: { color: "white", fontWeight: "bold", fontSize: 18 },
-
   searchRow: { flexDirection: "row", alignItems: "center", marginBottom: 15 },
-  searchInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 16,
-  },
+  searchInput: { flex: 1, borderWidth: 1, borderRadius: 8, padding: 10, fontSize: 16 },
   clearButton: { marginLeft: 8 },
   clearButtonText: { fontSize: 18, color: "red" },
-
-  card: {
-    padding: 15,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderRadius: 8,
-  },
+  card: { padding: 15, marginBottom: 10, borderWidth: 1, borderRadius: 8 },
   site: { fontSize: 18, fontWeight: "bold" },
   user: { fontSize: 16 },
   pass: { fontSize: 16 },
-
   smallIcon: { width: iconSize - 8, height: iconSize - 8, resizeMode: "contain" },
-
-  actions: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginTop: 12,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderColor: "#ddd",
-  },
+  actions: { flexDirection: "row", justifyContent: "space-around", marginTop: 12, paddingTop: 8, borderTopWidth: 1, borderColor: "#ddd" },
   icon: { width: iconSize, height: iconSize, resizeMode: "contain" },
-
-  modalContainer: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  modalContainer: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center" },
   modalContent: { width: "85%", padding: 20, borderRadius: 10 },
   modalTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 10 },
-  input: {
-    borderWidth: 1,
-    padding: 12,
-    borderRadius: 5,
-    marginBottom: 12,
-    fontSize: 16,
-  },
+  input: { borderWidth: 1, padding: 12, borderRadius: 5, marginBottom: 12, fontSize: 16 },
   modalActions: { flexDirection: "row", justifyContent: "flex-end" },
-  modalButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: 5,
-    marginLeft: 10,
-  },
+  modalButton: { paddingVertical: 10, paddingHorizontal: 18, borderRadius: 5, marginLeft: 10 },
   modalButtonText: { color: "white", fontWeight: "bold", fontSize: 16 },
-
   center: { alignItems: "center" },
   row: { flexDirection: "row", alignItems: "center", marginTop: 4 },
   ml6: { marginLeft: 6 },

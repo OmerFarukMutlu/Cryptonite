@@ -12,6 +12,7 @@ import SettingsScreen from "../screens/SettingsScreen";
 import ChangePasswordScreen from "../screens/ChangePasswordScreen";
 import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
 import VerifyCodeScreen from "../screens/VerifyCodeScreen";
+import VerifyEmailPendingScreen from "../screens/VerifyEmailPendingScreen"; // ✅ yeni ekran
 
 import { useThemeContext } from "../theme/ThemeContext";
 import { iconSize } from "../theme/theme";
@@ -22,49 +23,22 @@ const Stack = createNativeStackNavigator();
 const ThemeToggleButton = ({ isDark, toggleTheme }) => (
   <TouchableOpacity onPress={toggleTheme} style={styles.themeButton}>
     <Image
-      source={
-        isDark
-          ? require("../assets/icons/moon.png")
-          : require("../assets/icons/sun.png")
-      }
-      style={styles.themeIcon} // ✅ Orijinal renkleri kalsın, tintColor yok
+      source={isDark ? require("../assets/icons/moon.png") : require("../assets/icons/sun.png")}
+      style={styles.themeIcon}
     />
   </TouchableOpacity>
 );
 
 // 🔹 Wrapper componentler
-function HomeWrapper(props) {
-  const { theme } = useThemeContext();
-  return <HomeScreen {...props} theme={theme} />;
-}
-function LoginWrapper(props) {
-  const { theme } = useThemeContext();
-  return <LoginScreen {...props} theme={theme} />;
-}
-function RegisterWrapper(props) {
-  const { theme } = useThemeContext();
-  return <RegisterScreen {...props} theme={theme} />;
-}
-function ForgotPasswordWrapper(props) {
-  const { theme } = useThemeContext();
-  return <ForgotPasswordScreen {...props} theme={theme} />;
-}
-function VerifyCodeWrapper(props) {
-  const { theme } = useThemeContext();
-  return <VerifyCodeScreen {...props} theme={theme} />;
-}
-function ChangePasswordWrapper(props) {
-  const { theme } = useThemeContext();
-  return <ChangePasswordScreen {...props} theme={theme} />;
-}
-function VaultWrapper(props) {
-  const { theme } = useThemeContext();
-  return <VaultScreen {...props} theme={theme} />;
-}
-function SettingsWrapper(props) {
-  const { theme } = useThemeContext();
-  return <SettingsScreen {...props} theme={theme} />;
-}
+function HomeWrapper(props) { const { theme } = useThemeContext(); return <HomeScreen {...props} theme={theme} />; }
+function LoginWrapper(props) { const { theme } = useThemeContext(); return <LoginScreen {...props} theme={theme} />; }
+function RegisterWrapper(props) { const { theme } = useThemeContext(); return <RegisterScreen {...props} theme={theme} />; }
+function ForgotPasswordWrapper(props) { const { theme } = useThemeContext(); return <ForgotPasswordScreen {...props} theme={theme} />; }
+function VerifyCodeWrapper(props) { const { theme } = useThemeContext(); return <VerifyCodeScreen {...props} theme={theme} />; }
+function ChangePasswordWrapper(props) { const { theme } = useThemeContext(); return <ChangePasswordScreen {...props} theme={theme} />; }
+function VaultWrapper(props) { const { theme } = useThemeContext(); return <VaultScreen {...props} theme={theme} />; }
+function SettingsWrapper(props) { const { theme } = useThemeContext(); return <SettingsScreen {...props} theme={theme} />; }
+function VerifyEmailPendingWrapper(props) { const { theme } = useThemeContext(); return <VerifyEmailPendingScreen {...props} theme={theme} />; }
 
 // 🔹 HeaderRight fonksiyonu
 const getHeaderRight = (isDark, toggleTheme) => () =>
@@ -73,14 +47,8 @@ const getHeaderRight = (isDark, toggleTheme) => () =>
 // 🔹 Vault özel header (settings + theme)
 const getVaultHeaderOptions = (isDark, toggleTheme, navigation) => ({
   headerLeft: () => (
-    <TouchableOpacity
-      style={styles.settingsButton}
-      onPress={() => navigation.navigate("Settings")}
-    >
-      <Image
-        source={require("../assets/icons/settings.png")}
-        style={styles.settingsIcon} // ✅ Orijinal renk korunuyor
-      />
+    <TouchableOpacity style={styles.settingsButton} onPress={() => navigation.navigate("Settings")}>
+      <Image source={require("../assets/icons/settings.png")} style={styles.settingsIcon} />
     </TouchableOpacity>
   ),
   headerRight: getHeaderRight(isDark, toggleTheme),
@@ -99,29 +67,23 @@ export default function AppNavigator() {
           headerTitle: "Cryptonite",
           headerTitleAlign: "center",
           headerStyle: { backgroundColor: "green" },
-          headerTintColor: "white", // Navigation'un kendi back iconu için
+          headerTintColor: "white",
           headerTitleStyle: { fontWeight: "normal", fontSize: 20 },
         }}
       >
         {/* Home */}
-        <Stack.Screen
-          name="Home"
-          component={HomeWrapper}
-          options={{ headerShown: false }}
-        />
+        <Stack.Screen name="Home" component={HomeWrapper} options={{ headerShown: false }} />
 
         {/* Login */}
         <Stack.Screen
           name="Login"
           component={LoginWrapper}
-          options={({ navigation }) => ({
+          options={{
             headerTitle: "Cryptonite",
-            // 🔹 React Navigation’un default back ikonu kalsın
             headerBackTitleVisible: false,
-            // Back tuşuna basınca HomePage'e dönsün
             headerLeft: () => null,
             headerRight: getHeaderRight(isDark, toggleTheme),
-          })}
+          }}
         />
 
         {/* Register */}
@@ -134,22 +96,32 @@ export default function AppNavigator() {
           }}
         />
 
+        {/* Email Pending (Doğrulama Bekleme) */}
+        <Stack.Screen
+          name="VerifyEmailPending"
+          component={VerifyEmailPendingWrapper}
+          options={{
+            headerTitle: "Email Doğrulama",
+            headerRight: getHeaderRight(isDark, toggleTheme),
+          }}
+        />
+
+        {/* Kod Doğrulama (başka işler için saklıyoruz) */}
+        <Stack.Screen
+          name="VerifyCode"
+          component={VerifyCodeWrapper}
+          options={{
+            headerTitle: "Kod Doğrulama",
+            headerRight: getHeaderRight(isDark, toggleTheme),
+          }}
+        />
+
         {/* Şifremi Unuttum */}
         <Stack.Screen
           name="ForgotPassword"
           component={ForgotPasswordWrapper}
           options={{
             headerTitle: "Şifremi Unuttum",
-            headerRight: getHeaderRight(isDark, toggleTheme),
-          }}
-        />
-
-        {/* Kod Doğrulama */}
-        <Stack.Screen
-          name="VerifyCode"
-          component={VerifyCodeWrapper}
-          options={{
-            headerTitle: "Kod Doğrulama",
             headerRight: getHeaderRight(isDark, toggleTheme),
           }}
         />
@@ -168,9 +140,7 @@ export default function AppNavigator() {
         <Stack.Screen
           name="Vault"
           component={VaultWrapper}
-          options={({ navigation }) =>
-            getVaultHeaderOptions(isDark, toggleTheme, navigation)
-          }
+          options={({ navigation }) => getVaultHeaderOptions(isDark, toggleTheme, navigation)}
         />
 
         {/* Settings */}
@@ -188,20 +158,8 @@ export default function AppNavigator() {
 }
 
 const styles = StyleSheet.create({
-  themeButton: {
-    marginRight: 15,
-  },
-  themeIcon: {
-    width: iconSize + 4,
-    height: iconSize + 4,
-    resizeMode: "contain", // ✅ orijinal renk korunuyor
-  },
-  settingsButton: {
-    marginLeft: 15,
-  },
-  settingsIcon: {
-    width: iconSize + 4,
-    height: iconSize + 4,
-    resizeMode: "contain", // ✅ orijinal renk korunuyor
-  },
+  themeButton: { marginRight: 15 },
+  themeIcon: { width: iconSize + 4, height: iconSize + 4, resizeMode: "contain" },
+  settingsButton: { marginLeft: 15 },
+  settingsIcon: { width: iconSize + 4, height: iconSize + 4, resizeMode: "contain" },
 });

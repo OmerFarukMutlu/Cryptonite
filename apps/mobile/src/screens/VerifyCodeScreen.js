@@ -1,14 +1,16 @@
 // screens/VerifyCodeScreen.js
 import React, { useState, useRef, useContext } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { ThemeContext } from "../theme/ThemeContext";
+import { db } from "../firebase/firebaseConfig";
+import { doc, updateDoc } from "firebase/firestore";
 
 export default function VerifyCodeScreen({ route, navigation }) {
   const { theme } = useContext(ThemeContext);
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const inputs = useRef([]);
 
-  const from = route.params?.from; // forgotPassword veya changePassword
+  const { from, otp, uid, confirmationResult, userInfo } = route.params;
 
   const handleChange = (text, index) => {
     let newCode = [...code];
@@ -17,31 +19,37 @@ export default function VerifyCodeScreen({ route, navigation }) {
     if (text && index < 5) inputs.current[index + 1].focus();
   };
 
-  const handleVerify = () => {
-    // 🚀 Test için: 6 hane girildi mi → yönlendir
-    if (from === "changePassword") {
-      navigation.replace("Settings");
-    } else {
-      navigation.replace("Vault");
+  const handleVerify = async () => {
+    const fullCode = code.join("");
+    try {
+      if (from === "email" && fullCode === otp) {
+        await updateDoc(doc(db, "users", uid), { verified: true });
+        Alert.alert("Başarılı ✅", "E-posta doğrulandı.");
+        navigation.replace("Vault");
+      } else if (from === "sms") {
+        const result = await confirmationResult.confirm(fullCode);
+        if (result.user) {
+          await updateDoc(doc(db, "users", result.user.uid), { verified: true });
+          Alert.alert("Başarılı ✅", "Telefon doğrulandı.");
+          navigation.replace("Vault");
+        }
+      } else {
+        Alert.alert("Hata", "Kod yanlış!");
+      }
+    } catch (err) {
+      Alert.alert("Doğrulama Hatası", err.message);
     }
   };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Text style={[styles.title, { color: theme.colors.text }]}>Kod Doğrulama</Text>
-      <Text style={[styles.subtitle, { color: theme.colors.text }]}>
-        Size gönderilen 6 haneli kodu giriniz
-      </Text>
-
       <View style={styles.codeContainer}>
         {code.map((digit, index) => (
           <TextInput
             key={index}
             ref={(ref) => (inputs.current[index] = ref)}
-            style={[
-              styles.codeInput,
-              { borderColor: theme.colors.primary, color: theme.colors.text },
-            ]}
+            style={[styles.codeInput, { borderColor: theme.colors.primary }]}
             value={digit}
             onChangeText={(text) => handleChange(text, index)}
             keyboardType="number-pad"
@@ -49,11 +57,7 @@ export default function VerifyCodeScreen({ route, navigation }) {
           />
         ))}
       </View>
-
-      <TouchableOpacity
-        style={[styles.button, { backgroundColor: theme.colors.primary }]}
-        onPress={handleVerify}
-      >
+      <TouchableOpacity style={[styles.button, { backgroundColor: theme.colors.primary }]} onPress={handleVerify}>
         <Text style={styles.buttonText}>Onayla</Text>
       </TouchableOpacity>
     </View>
@@ -62,18 +66,9 @@ export default function VerifyCodeScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
-  title: { fontSize: 22, fontWeight: "bold", marginBottom: 10 },
-  subtitle: { fontSize: 16, marginBottom: 20, textAlign: "center" }, // ✅ inline kaldırıldı
-  codeContainer: { flexDirection: "row", justifyContent: "space-between", marginBottom: 30 },
-  codeInput: {
-    width: 45,
-    height: 55,
-    borderWidth: 1,
-    borderRadius: 8,
-    textAlign: "center",
-    fontSize: 20,
-    marginHorizontal: 5,
-  },
+  title: { fontSize: 22, fontWeight: "bold", marginBottom: 20 },
+  codeContainer: { flexDirection: "row", marginBottom: 30 },
+  codeInput: { width: 45, height: 55, borderWidth: 1, borderRadius: 8, textAlign: "center", fontSize: 20, marginHorizontal: 5 },
   button: { padding: 14, borderRadius: 8, alignItems: "center", width: "100%" },
   buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
 });
