@@ -186,7 +186,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "appmodules::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-appmodules-Debug-9d0ddbdab4d7f56639d9.json",
+					"jsonFile" : "target-appmodules-Debug-e29bf44480c82dde3a34.json",
 					"name" : "appmodules",
 					"projectIndex" : 0
 				},
@@ -214,7 +214,7 @@
 				{
 					"directoryIndex" : 2,
 					"id" : "react_codegen_rnpicker::@e8bb2e9e833f47d0d516",
-					"jsonFile" : "target-react_codegen_rnpicker-Debug-6449952633e3c6592b80.json",
+					"jsonFile" : "target-react_codegen_rnpicker-Debug-dd2a66105eb9bb2bb453.json",
 					"name" : "react_codegen_rnpicker",
 					"projectIndex" : 0
 				},
@@ -228,7 +228,7 @@
 				{
 					"directoryIndex" : 6,
 					"id" : "react_codegen_rnscreens::@25bcbd507e98d3a854ad",
-					"jsonFile" : "target-react_codegen_rnscreens-Debug-2120fa1301619cba75a7.json",
+					"jsonFile" : "target-react_codegen_rnscreens-Debug-23f961666b8b3d405293.json",
 					"name" : "react_codegen_rnscreens",
 					"projectIndex" : 0
 				},
@@ -242,7 +242,7 @@
 				{
 					"directoryIndex" : 5,
 					"id" : "react_codegen_safeareacontext::@7984cd80db47aa7b952a",
-					"jsonFile" : "target-react_codegen_safeareacontext-Debug-ef992ff431d4d628450c.json",
+					"jsonFile" : "target-react_codegen_safeareacontext-Debug-3f7e109f090dd490b4f0.json",
 					"name" : "react_codegen_safeareacontext",
 					"projectIndex" : 0
 				}
@@ -252,7 +252,7 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "C:/Users/faruk/Cryptonite/android/app/.cxx/Debug/183jz1u6/x86_64",
+		"build" : "C:/Users/faruk/Cryptonite/android/app/.cxx/Debug/183jz1u6/arm64-v8a",
 		"source" : "C:/Users/faruk/Cryptonite/node_modules/react-native/ReactAndroid/cmake-utils/default-app-setup"
 	},
 	"version" : 
