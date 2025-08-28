@@ -27,7 +27,7 @@ const ThemeToggleButton = ({ isDark, toggleTheme }) => (
           ? require("../assets/icons/moon.png")
           : require("../assets/icons/sun.png")
       }
-      style={styles.themeIcon}
+      style={styles.themeIcon} // ✅ Orijinal renkleri kalsın, tintColor yok
     />
   </TouchableOpacity>
 );
@@ -79,7 +79,7 @@ const getVaultHeaderOptions = (isDark, toggleTheme, navigation) => ({
     >
       <Image
         source={require("../assets/icons/settings.png")}
-        style={styles.settingsIcon}
+        style={styles.settingsIcon} // ✅ Orijinal renk korunuyor
       />
     </TouchableOpacity>
   ),
@@ -94,12 +94,12 @@ export default function AppNavigator() {
   return (
     <NavigationContainer theme={theme}>
       <Stack.Navigator
-        initialRouteName="Home" // 🔥 Açılış sayfası
+        initialRouteName="Home"
         screenOptions={{
           headerTitle: "Cryptonite",
           headerTitleAlign: "center",
           headerStyle: { backgroundColor: "green" },
-          headerTintColor: "white",
+          headerTintColor: "white", // Navigation'un kendi back iconu için
           headerTitleStyle: { fontWeight: "normal", fontSize: 20 },
         }}
       >
@@ -114,10 +114,14 @@ export default function AppNavigator() {
         <Stack.Screen
           name="Login"
           component={LoginWrapper}
-          options={{
+          options={({ navigation }) => ({
             headerTitle: "Cryptonite",
+            // 🔹 React Navigation’un default back ikonu kalsın
+            headerBackTitleVisible: false,
+            // Back tuşuna basınca HomePage'e dönsün
+            headerLeft: () => null,
             headerRight: getHeaderRight(isDark, toggleTheme),
-          }}
+          })}
         />
 
         {/* Register */}
@@ -190,7 +194,7 @@ const styles = StyleSheet.create({
   themeIcon: {
     width: iconSize + 4,
     height: iconSize + 4,
-    resizeMode: "contain",
+    resizeMode: "contain", // ✅ orijinal renk korunuyor
   },
   settingsButton: {
     marginLeft: 15,
@@ -198,6 +202,6 @@ const styles = StyleSheet.create({
   settingsIcon: {
     width: iconSize + 4,
     height: iconSize + 4,
-    resizeMode: "contain",
+    resizeMode: "contain", // ✅ orijinal renk korunuyor
   },
 });

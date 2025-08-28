@@ -1,5 +1,5 @@
 // screens/SettingsScreen.js
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Alert,
   Image,
+  BackHandler,
 } from "react-native";
 import { ThemeContext } from "../theme/ThemeContext";
 
@@ -16,6 +17,21 @@ export default function SettingsScreen({ navigation }) {
   const [username, setUsername] = useState("testuser");
   const [email, setEmail] = useState("testuser@mail.com");
   const [phone, setPhone] = useState("05555555555");
+
+  // 🔹 Android donanım geri tuşu → Vault’a dönsün (çıkış yapılmadıysa)
+  useEffect(() => {
+    const backAction = () => {
+      navigation.replace("Vault");
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, [navigation]);
 
   const handleSave = () => {
     Alert.alert(
@@ -26,20 +42,21 @@ export default function SettingsScreen({ navigation }) {
 
   const handleLogout = () => {
     Alert.alert("Çıkış Yapıldı 👋");
-    navigation.replace("Login");
+    // ✅ Stack sıfırla → geri tuşuyla Vault’a dönemez
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "Login" }],
+    });
   };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      {/* Üst kısım: settings ikonu solda, yanında Ayarlar yazısı */}
+      {/* Üst kısım: settings ikonu + başlık */}
       <View style={styles.headerRow}>
         <View style={styles.rowCenter}>
           <Image
             source={require("../assets/icons/settings.png")}
-            style={[
-              styles.settingsIcon,
-              { tintColor: theme.dark ? theme.colors.button.primary : theme.colors.text },
-            ]}
+            style={styles.settingsIcon} // ✅ orijinal renk korunuyor
           />
           <Text style={[styles.title, { color: theme.colors.text }]}>Ayarlar</Text>
         </View>
