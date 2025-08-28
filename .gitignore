@@ -7,15 +7,24 @@ pnpm-lock.yaml
 
 # Env / secrets
 .env
-.env.*
-!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example   # sadece örnek dosya pushlansın
 
 # Build / dist
 dist/
 build/
 coverage/
+.expo/
+.expo-shared/
 
-# OS/Editor
+# Android / iOS build
+android/app/build/
+ios/Pods/
+
+# OS / Editor
 .DS_Store
 Thumbs.db
 .vscode/
