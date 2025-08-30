@@ -1,5 +1,5 @@
 // screens/SettingsScreen.js
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -7,156 +7,167 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  ScrollView,
   Image,
-  BackHandler,
 } from "react-native";
 import { ThemeContext } from "../theme/ThemeContext";
+import auth from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
 
 export default function SettingsScreen({ navigation }) {
   const { theme } = useContext(ThemeContext);
-  const [username, setUsername] = useState("testuser");
-  const [email, setEmail] = useState("testuser@mail.com");
-  const [phone, setPhone] = useState("05555555555");
+  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
 
-  // 🔹 Android donanım geri tuşu → Vault’a dönsün (çıkış yapılmadıysa)
   useEffect(() => {
-    const backAction = () => {
-      navigation.replace("Vault");
-      return true;
+    const fetchUser = async () => {
+      try {
+        const user = auth().currentUser;
+        if (!user) return;
+        const doc = await firestore().collection("users").doc(user.uid).get();
+        if (doc.exists) {
+          const data = doc.data();
+          setName(data.name || "");
+          setUsername(data.username || "");
+          setPhone(data.phone || "");
+          setEmail(data.email || user.email || "");
+        }
+      } catch (err) {
+        Alert.alert("Hata", err.message);
+      }
     };
+    fetchUser();
+  }, []);
 
-    const backHandler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backAction
-    );
-
-    return () => backHandler.remove();
-  }, [navigation]);
-
-  const handleSave = () => {
-    Alert.alert(
-      "Bilgiler güncellendi ✅",
-      `Kullanıcı: ${username}\nE-mail: ${email}\nTelefon: ${phone}`
-    );
+  const handleSave = async () => {
+    try {
+      const user = auth().currentUser;
+      if (!user) return;
+      await firestore().collection("users").doc(user.uid).update({
+        name,
+        username,
+        phone,
+      });
+      Alert.alert("Başarılı ✅", "Bilgiler güncellendi.");
+    } catch (err) {
+      Alert.alert("Hata", err.message);
+    }
   };
 
-  const handleLogout = () => {
-    Alert.alert("Çıkış Yapıldı 👋");
-    // ✅ Stack sıfırla → geri tuşuyla Vault’a dönemez
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "Login" }],
-    });
+  const handleChangePassword = async () => {
+    try {
+      const user = auth().currentUser;
+      if (!user) return;
+      await auth().sendPasswordResetEmail(user.email);
+      Alert.alert("Şifre Değişikliği", "Şifre yenileme linki e-posta adresine gönderildi.");
+    } catch (err) {
+      Alert.alert("Hata", err.message);
+    }
+  };
+
+  const handleLogout = async () => {
+    await auth().signOut();
+    navigation.replace("Login");
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      {/* Üst kısım: settings ikonu + başlık */}
+    <ScrollView
+      contentContainerStyle={[
+        styles.container,
+        { backgroundColor: theme.colors.background },
+      ]}
+    >
+      {/* Başlık + ikon */}
       <View style={styles.headerRow}>
-        <View style={styles.rowCenter}>
-          <Image
-            source={require("../assets/icons/settings.png")}
-            style={styles.settingsIcon} // ✅ orijinal renk korunuyor
-          />
-          <Text style={[styles.title, { color: theme.colors.text }]}>Ayarlar</Text>
-        </View>
+        <Image
+          source={require("../assets/icons/settings.png")}
+          style={styles.headerIcon} // ❌ tintColor yok → orijinal renk korunur
+        />
+        <Text style={[styles.title, { color: theme.colors.text }]}>Ayarlar</Text>
       </View>
 
-      {/* Kullanıcı adı */}
       <TextInput
-        style={[
-          styles.input,
-          { borderColor: theme.colors.primary, color: theme.colors.text },
-        ]}
+        style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
+        placeholder="Ad"
+        placeholderTextColor={theme.colors.border}
+        value={name}
+        onChangeText={setName}
+      />
+      <TextInput
+        style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
+        placeholder="Kullanıcı Adı"
+        placeholderTextColor={theme.colors.border}
         value={username}
         onChangeText={setUsername}
-        placeholder="Kullanıcı adı"
-        placeholderTextColor={theme.colors.border}
       />
-
-      {/* E-mail */}
       <TextInput
-        style={[
-          styles.input,
-          { borderColor: theme.colors.primary, color: theme.colors.text },
-        ]}
-        value={email}
-        onChangeText={setEmail}
-        placeholder="E-mail"
+        style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
+        placeholder="Telefon"
         placeholderTextColor={theme.colors.border}
-        keyboardType="email-address"
-      />
-
-      {/* Telefon */}
-      <TextInput
-        style={[
-          styles.input,
-          { borderColor: theme.colors.primary, color: theme.colors.text },
-        ]}
         value={phone}
         onChangeText={setPhone}
-        placeholder="Telefon numarası"
-        placeholderTextColor={theme.colors.border}
-        keyboardType="phone-pad"
+      />
+      <TextInput
+        style={[
+          styles.input,
+          { borderColor: theme.colors.primary, color: theme.colors.text },
+          styles.emailInput,
+        ]}
+        value={email}
+        editable={false}
       />
 
-      {/* Kaydet */}
-      <TouchableOpacity
-        style={[styles.button, { backgroundColor: theme.colors.button.primary }]}
-        onPress={handleSave}
-      >
-        <Text style={styles.buttonText}>Kaydet</Text>
+      <TouchableOpacity style={[styles.button, styles.saveButton]} onPress={handleSave}>
+        <Text style={styles.buttonText}>Bilgileri Kaydet</Text>
       </TouchableOpacity>
 
-      {/* Şifre Değiştir */}
-      <TouchableOpacity
-        style={[styles.button, { backgroundColor: theme.colors.button.warning }]}
-        onPress={() => navigation.navigate("ChangePassword")}
-      >
+      <TouchableOpacity style={[styles.button, styles.changePassButton]} onPress={handleChangePassword}>
         <Text style={styles.buttonText}>Şifre Değiştir</Text>
       </TouchableOpacity>
 
-      {/* Çıkış */}
-      <TouchableOpacity
-        style={[styles.button, { backgroundColor: theme.colors.button.danger }]}
-        onPress={handleLogout}
-      >
+      <TouchableOpacity style={[styles.button, styles.logoutButton]} onPress={handleLogout}>
         <Text style={styles.buttonText}>Çıkış Yap</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
+  container: { flexGrow: 1, padding: 20, alignItems: "center" },
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 20,
   },
-  rowCenter: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  settingsIcon: {
+  headerIcon: {
     width: 26,
     height: 26,
-    resizeMode: "contain",
     marginRight: 8,
+    resizeMode: "contain", // orijinal görünüm bozulmasın
   },
   title: { fontSize: 22, fontWeight: "bold" },
   input: {
+    width: "100%",
     borderWidth: 1,
     borderRadius: 8,
     padding: 12,
     marginBottom: 15,
     fontSize: 16,
   },
+  emailInput: {
+    backgroundColor: "#eee",
+  },
   button: {
+    width: "100%",
     padding: 14,
     borderRadius: 8,
     alignItems: "center",
-    marginBottom: 15,
+    marginBottom: 12,
   },
+  saveButton: { backgroundColor: "green" },
+  changePassButton: { backgroundColor: "blue" },
+  logoutButton: { backgroundColor: "red" },
   buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
 });

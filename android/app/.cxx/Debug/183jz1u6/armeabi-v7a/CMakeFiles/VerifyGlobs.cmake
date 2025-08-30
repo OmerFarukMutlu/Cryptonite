@@ -12,6 +12,31 @@ if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   file(TOUCH_NOCREATE "C:/Users/faruk/Cryptonite/android/app/.cxx/Debug/183jz1u6/armeabi-v7a/CMakeFiles/cmake.verify_globs")
 endif()
 
+# react_codegen_SRCS at C:/Users/faruk/Cryptonite/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/CMakeLists.txt:9 (file)
+file(GLOB NEW_GLOB LIST_DIRECTORIES true "C:/Users/faruk/Cryptonite/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/*.cpp")
+set(OLD_GLOB
+  "C:/Users/faruk/Cryptonite/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/rnasyncstorage-generated.cpp"
+  )
+if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
+  message("-- GLOB mismatch!")
+  file(TOUCH_NOCREATE "C:/Users/faruk/Cryptonite/android/app/.cxx/Debug/183jz1u6/armeabi-v7a/CMakeFiles/cmake.verify_globs")
+endif()
+
+# react_codegen_SRCS at C:/Users/faruk/Cryptonite/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/CMakeLists.txt:9 (file)
+file(GLOB NEW_GLOB LIST_DIRECTORIES true "C:/Users/faruk/Cryptonite/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/react/renderer/components/rnasyncstorage/*.cpp")
+set(OLD_GLOB
+  "C:/Users/faruk/Cryptonite/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/react/renderer/components/rnasyncstorage/ComponentDescriptors.cpp"
+  "C:/Users/faruk/Cryptonite/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/react/renderer/components/rnasyncstorage/EventEmitters.cpp"
+  "C:/Users/faruk/Cryptonite/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/react/renderer/components/rnasyncstorage/Props.cpp"
+  "C:/Users/faruk/Cryptonite/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/react/renderer/components/rnasyncstorage/ShadowNodes.cpp"
+  "C:/Users/faruk/Cryptonite/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/react/renderer/components/rnasyncstorage/States.cpp"
+  "C:/Users/faruk/Cryptonite/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/react/renderer/components/rnasyncstorage/rnasyncstorageJSI-generated.cpp"
+  )
+if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
+  message("-- GLOB mismatch!")
+  file(TOUCH_NOCREATE "C:/Users/faruk/Cryptonite/android/app/.cxx/Debug/183jz1u6/armeabi-v7a/CMakeFiles/cmake.verify_globs")
+endif()
+
 # react_codegen_SRCS at C:/Users/faruk/Cryptonite/node_modules/@react-native-clipboard/clipboard/android/build/generated/source/codegen/jni/CMakeLists.txt:9 (file)
 file(GLOB NEW_GLOB LIST_DIRECTORIES true "C:/Users/faruk/Cryptonite/node_modules/@react-native-clipboard/clipboard/android/build/generated/source/codegen/jni/*.cpp")
 set(OLD_GLOB

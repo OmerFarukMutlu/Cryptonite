@@ -1,55 +1,80 @@
 // screens/VerifyEmailPendingScreen.js
-import React, { useContext, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from "react-native";
+import React, { useContext, useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import { ThemeContext } from "../theme/ThemeContext";
-import { auth, db } from "../firebase/firebaseConfig";
-import { sendEmailVerification } from "firebase/auth";
-import { doc, updateDoc, deleteDoc, getDoc } from "firebase/firestore";
+import auth from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
 
 export default function VerifyEmailPendingScreen({ navigation }) {
   const { theme, isDark } = useContext(ThemeContext);
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
 
+  // ⏱️ Cooldown sayacı
+  useEffect(() => {
+    let timer;
+    if (cooldown > 0) {
+      timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [cooldown]);
+
+  // 📩 Tekrar gönder
   const handleResend = async () => {
+    if (cooldown > 0) {
+      Alert.alert("Bekle", `${cooldown} saniye içinde tekrar deneyebilirsin.`);
+      return;
+    }
     try {
-      if (auth.currentUser) {
-        await sendEmailVerification(auth.currentUser);
+      setResending(true);
+      const user = auth().currentUser;
+      if (user) {
+        await user.sendEmailVerification();
         Alert.alert("Tekrar Gönderildi", "Mail kutunu (Spam dahil) kontrol et!");
+        setCooldown(60); // 60 saniye cooldown
       }
     } catch (err) {
       Alert.alert("Hata", err.message);
+    } finally {
+      setResending(false);
     }
   };
 
+  // ✅ Doğrulama kontrolü
   const handleCheckVerified = async () => {
     try {
       setLoading(true);
-      const user = auth.currentUser;
+      const user = auth().currentUser;
       if (!user) {
         navigation.replace("Login");
         return;
       }
+
+      // Küçük delay (bazı durumlarda firebase cache’i hemen güncellemiyor)
+      await new Promise((res) => setTimeout(res, 500));
+
       await user.reload();
-      if (user.emailVerified) {
-        await updateDoc(doc(db, "users", user.uid), { verified: true });
+      const refreshedUser = auth().currentUser; // 🔑 tekrar al
+
+      if (refreshedUser.emailVerified) {
+        await firestore().collection("users").doc(refreshedUser.uid).update({
+          verified: true,
+        });
         Alert.alert("Başarılı ✅", "Email doğrulandı!");
         navigation.reset({ index: 0, routes: [{ name: "Vault" }] });
       } else {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) {
-          const data = userDoc.data();
-          const createdAt = data.createdAt.toDate();
-          const now = new Date();
-          const diff = (now - createdAt) / (1000 * 60 * 60 * 24);
-          if (diff > 2) {
-            await deleteDoc(doc(db, "users", user.uid));
-            await user.delete();
-            Alert.alert("Hesap Silindi", "2 gün içinde doğrulama yapılmadığı için hesabın süresi doldu.");
-            navigation.replace("Register");
-            return;
-          }
-        }
-        Alert.alert("Henüz Doğrulanmadı", "Emailini kontrol et ve linke tıkla.");
+        Alert.alert(
+          "Henüz Doğrulanmadı",
+          "Emailini kontrol et ve doğrulama linkine tıkla."
+        );
       }
     } catch (err) {
       Alert.alert("Hata", err.message);
@@ -59,23 +84,35 @@ export default function VerifyEmailPendingScreen({ navigation }) {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Text style={[styles.title, { color: theme.colors.text }]}>Email Doğrulaması Bekleniyor</Text>
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
+      <Text style={[styles.title, { color: theme.colors.text }]}>
+        Email Doğrulaması Bekleniyor
+      </Text>
       <Text style={[styles.subtitle, { color: theme.colors.text }]}>
-        Email adresine bir doğrulama linki gönderdik. Lütfen mail kutunu kontrol et (Spam klasörünü de unutma).
+        Email adresine bir doğrulama linki gönderdik. Mail kutunu kontrol et
+        (Spam klasörünü unutma).
       </Text>
 
       {/* Tekrar Gönder */}
       <TouchableOpacity
-        style={[styles.button, styles.neonOrange, isDark && styles.neonDarkShadow]}
+        style={[styles.button, styles.orange, isDark && styles.darkShadow]}
         onPress={handleResend}
+        disabled={resending || cooldown > 0}
       >
-        <Text style={styles.buttonText}>Tekrar Gönder</Text>
+        {resending ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>
+            {cooldown > 0 ? `Tekrar Gönder (${cooldown})` : "Tekrar Gönder"}
+          </Text>
+        )}
       </TouchableOpacity>
 
       {/* Doğruladım */}
       <TouchableOpacity
-        style={[styles.button, styles.neonGreen, isDark && styles.neonDarkShadow]}
+        style={[styles.button, styles.green, isDark && styles.darkShadow]}
         onPress={handleCheckVerified}
         disabled={loading}
       >
@@ -88,7 +125,7 @@ export default function VerifyEmailPendingScreen({ navigation }) {
 
       {/* Giriş Ekranına Dön */}
       <TouchableOpacity
-        style={[styles.button, styles.neonRed, isDark && styles.neonDarkShadow]}
+        style={[styles.button, styles.red, isDark && styles.darkShadow]}
         onPress={() => navigation.replace("Login")}
       >
         <Text style={styles.buttonText}>Giriş Ekranına Dön</Text>
@@ -109,35 +146,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   buttonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
-
-  // Neon renkler
-  neonOrange: {
-    backgroundColor: "#FFA000",
-    shadowColor: "#FFA000",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 10,
-    elevation: 8,
-  },
-  neonGreen: {
-    backgroundColor: "#4CAF50",
-    shadowColor: "#4CAF50",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 10,
-    elevation: 8,
-  },
-  neonRed: {
-    backgroundColor: "#D32F2F",
-    shadowColor: "#D32F2F",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 10,
-    elevation: 8,
-  },
-  neonDarkShadow: {
-    shadowOpacity: 1,
-    shadowRadius: 15,
-    elevation: 12,
-  },
+  orange: { backgroundColor: "#FFA000", elevation: 6 },
+  green: { backgroundColor: "#4CAF50", elevation: 6 },
+  red: { backgroundColor: "#D32F2F", elevation: 6 },
+  darkShadow: { shadowOpacity: 1, shadowRadius: 15, elevation: 12 },
 });

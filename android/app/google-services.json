@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "772339614933",
+    "project_id": "cryptonite-1c96e",
+    "storage_bucket": "cryptonite-1c96e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:772339614933:android:0178701c488ed29eda8e5c",
+        "android_client_info": {
+          "package_name": "com.cryptonite"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC6FWnOp1NWAf6BWxGDggdzTleDY1WVkMc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

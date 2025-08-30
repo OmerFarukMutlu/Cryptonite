@@ -44,6 +44,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
+  include("C:/Users/faruk/Cryptonite/android/app/.cxx/Debug/183jz1u6/x86_64/rnasyncstorage_autolinked_build/cmake_install.cmake")
   include("C:/Users/faruk/Cryptonite/android/app/.cxx/Debug/183jz1u6/x86_64/rnclipboard_autolinked_build/cmake_install.cmake")
   include("C:/Users/faruk/Cryptonite/android/app/.cxx/Debug/183jz1u6/x86_64/rnpicker_autolinked_build/cmake_install.cmake")
   include("C:/Users/faruk/Cryptonite/android/app/.cxx/Debug/183jz1u6/x86_64/rngesturehandler_codegen_autolinked_build/cmake_install.cmake")

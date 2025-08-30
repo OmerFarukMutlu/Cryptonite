@@ -1,6 +1,9 @@
 C:/Users/faruk/Cryptonite/android/app/.cxx/Debug/183jz1u6/armeabi-v7a/CMakeFiles/appmodules.dir
 C:/Users/faruk/Cryptonite/android/app/.cxx/Debug/183jz1u6/armeabi-v7a/CMakeFiles/edit_cache.dir
 C:/Users/faruk/Cryptonite/android/app/.cxx/Debug/183jz1u6/armeabi-v7a/CMakeFiles/rebuild_cache.dir
+C:/Users/faruk/Cryptonite/android/app/.cxx/Debug/183jz1u6/armeabi-v7a/rnasyncstorage_autolinked_build/CMakeFiles/react_codegen_rnasyncstorage.dir
+C:/Users/faruk/Cryptonite/android/app/.cxx/Debug/183jz1u6/armeabi-v7a/rnasyncstorage_autolinked_build/CMakeFiles/edit_cache.dir
+C:/Users/faruk/Cryptonite/android/app/.cxx/Debug/183jz1u6/armeabi-v7a/rnasyncstorage_autolinked_build/CMakeFiles/rebuild_cache.dir
 C:/Users/faruk/Cryptonite/android/app/.cxx/Debug/183jz1u6/armeabi-v7a/rnclipboard_autolinked_build/CMakeFiles/react_codegen_rnclipboard.dir
 C:/Users/faruk/Cryptonite/android/app/.cxx/Debug/183jz1u6/armeabi-v7a/rnclipboard_autolinked_build/CMakeFiles/edit_cache.dir
 C:/Users/faruk/Cryptonite/android/app/.cxx/Debug/183jz1u6/armeabi-v7a/rnclipboard_autolinked_build/CMakeFiles/rebuild_cache.dir

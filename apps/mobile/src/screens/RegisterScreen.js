@@ -9,9 +9,8 @@ import { ThemeContext } from "../theme/ThemeContext";
 import { iconSize } from "../theme/theme";
 import countryCodes from "../utils/countryCodes.json";
 
-import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "../firebase/firebaseConfig";
+import auth from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
 
 export default function RegisterScreen({ navigation }) {
   const { theme } = useContext(ThemeContext);
@@ -24,7 +23,6 @@ export default function RegisterScreen({ navigation }) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // 👁 Göster/gizle state
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -50,23 +48,31 @@ export default function RegisterScreen({ navigation }) {
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      // 🔹 Kullanıcı oluştur
+      const userCredential = await auth().createUserWithEmailAndPassword(email, password);
       const user = userCredential.user;
 
-      await setDoc(doc(db, "users", user.uid), {
+      // 🔑 İlk token refresh → updateEmail / updatePassword gibi işlemler için "recent login" garantisi
+      await user.getIdToken(true);
+
+      // 🔹 Firestore’a kaydet
+      await firestore().collection("users").doc(user.uid).set({
         name,
         username,
         phone: countryCode + phone,
         email,
-        verified: false,
-        createdAt: serverTimestamp(),
+        createdAt: firestore.FieldValue.serverTimestamp(),
       });
 
-      await sendEmailVerification(user);
+      // 🔹 Email doğrulama gönder
+      await user.sendEmailVerification();
       Alert.alert("Doğrulama Gönderildi", "Email adresini kontrol et!");
 
+      // 🔹 Doğrulama bekleme ekranına yönlendir
       navigation.replace("VerifyEmailPending");
+
     } catch (error) {
+      console.log("Register Error:", error.code, error.message);
       if (error.code === "auth/email-already-in-use") {
         Alert.alert("Kayıt Hatası", "Bu email adresi zaten kullanılıyor.");
       } else if (error.code === "auth/weak-password") {
@@ -78,23 +84,36 @@ export default function RegisterScreen({ navigation }) {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-      <ScrollView contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]} keyboardShouldPersistTaps="handled">
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView
+        contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Logo */}
         <View style={styles.logoContainer}>
           <Image source={require("../assets/icons/shield.png")} style={styles.logoIcon} />
           <Text style={[styles.logo, { color: theme.colors.primary }]}>Cryptonite</Text>
         </View>
 
-        {/* Form alanları */}
+        {/* Ad */}
         <View style={[styles.inputContainer, { borderColor: theme.colors.primary }]}>
           <TextInput placeholder="Ad" value={name} onChangeText={setName} style={styles.textInput}/>
         </View>
+
+        {/* Kullanıcı adı */}
         <View style={[styles.inputContainer, { borderColor: theme.colors.primary }]}>
           <TextInput placeholder="Kullanıcı Adı" value={username} onChangeText={setUsername} style={styles.textInput}/>
         </View>
+
+        {/* Telefon */}
         <View style={[styles.phoneRow, { borderColor: theme.colors.primary }]}>
           <Picker selectedValue={countryCode} style={{ width: 150 }} onValueChange={setCountryCode}>
-            {countryCodes.map((c, i) => <Picker.Item key={i} label={`${c.name} (${c.code})`} value={c.code} />)}
+            {countryCodes.map((c, i) => (
+              <Picker.Item key={i} label={`${c.name} (${c.code})`} value={c.code} />
+            ))}
           </Picker>
           <TextInput
             placeholder="Başında 0 olmadan"
@@ -105,8 +124,16 @@ export default function RegisterScreen({ navigation }) {
             style={styles.phoneInput}
           />
         </View>
+
+        {/* Email */}
         <View style={[styles.inputContainer, { borderColor: theme.colors.primary }]}>
-          <TextInput placeholder="Email" value={email} onChangeText={setEmail} style={styles.textInput} keyboardType="email-address"/>
+          <TextInput
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            style={styles.textInput}
+            keyboardType="email-address"
+          />
         </View>
 
         {/* Şifre */}
@@ -126,7 +153,7 @@ export default function RegisterScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        {/* Şifre Onayı */}
+        {/* Şifre onayı */}
         <View style={[styles.inputContainer, { borderColor: theme.colors.primary }]}>
           <TextInput
             placeholder="Şifre Onayı"
@@ -143,7 +170,11 @@ export default function RegisterScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={[styles.button, { backgroundColor: theme.colors.primary }]} onPress={handleRegister}>
+        {/* Kayıt butonu */}
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: theme.colors.primary }]}
+          onPress={handleRegister}
+        >
           <Text style={styles.buttonText}>Kayıt Ol</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -156,9 +187,24 @@ const styles = StyleSheet.create({
   logoContainer: { flexDirection: "row", alignItems: "center", marginBottom: 40 },
   logoIcon: { width: iconSize + 12, height: iconSize + 12 },
   logo: { fontSize: 32, fontWeight: "bold", marginLeft: 12 },
-  phoneRow: { flexDirection: "row", alignItems: "center", width: "100%", borderWidth: 1, borderRadius: 8, marginBottom: 15 },
+  phoneRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 15,
+  },
   phoneInput: { flex: 1, fontSize: 16, paddingVertical: 12 },
-  inputContainer: { width: "100%", flexDirection: "row", alignItems: "center", borderWidth: 1, borderRadius: 8, marginBottom: 15, paddingHorizontal: 10 },
+  inputContainer: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 15,
+    paddingHorizontal: 10,
+  },
   textInput: { flex: 1, fontSize: 16, paddingVertical: 12 },
   eyeIcon: { width: 22, height: 22, resizeMode: "contain" },
   button: { width: "100%", padding: 16, borderRadius: 8, alignItems: "center" },

@@ -1,5 +1,5 @@
 // screens/LoginScreen.js
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   View,
   Text,
@@ -13,18 +13,18 @@ import {
 import { ThemeContext } from "../theme/ThemeContext";
 import { iconSize } from "../theme/theme";
 
-import { signInWithEmailAndPassword, deleteUser } from "firebase/auth";
-import { collection, query, where, getDocs, doc, getDoc, deleteDoc } from "firebase/firestore";
-import { auth, db } from "../firebase/firebaseConfig";
+import auth from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
 
 export default function LoginScreen({ navigation }) {
   const { theme } = useContext(ThemeContext);
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // 🔹 Android geri tuşu → Home ekranına
-  React.useEffect(() => {
+  // 🔙 Android geri tuşu → Home
+  useEffect(() => {
     const backAction = () => {
       navigation.replace("Home");
       return true;
@@ -33,7 +33,6 @@ export default function LoginScreen({ navigation }) {
     return () => backHandler.remove();
   }, [navigation]);
 
-  // 📌 Telefon numarasını normalize et
   const normalizePhoneForLogin = (input) => {
     let phone = input.replace(/\s+/g, "");
     if (phone.startsWith("0") && phone.length === 11) {
@@ -43,90 +42,77 @@ export default function LoginScreen({ navigation }) {
   };
 
   const handleLogin = async () => {
+    if (loading) return;
     if (!identifier || !password) {
       Alert.alert("Hata", "Email / Kullanıcı adı / Telefon ve şifre gerekli!");
       return;
     }
 
+    setLoading(true);
     try {
-      let emailToLogin = identifier;
+      let emailToLogin = null;
 
-      // 1) Email
+      // 📌 Email
       if (identifier.includes("@")) {
         emailToLogin = identifier;
       }
-      // 2) Telefon
+      // 📌 Telefon
       else if (/^\d+$/.test(identifier) || identifier.startsWith("+")) {
         const normalized = normalizePhoneForLogin(identifier);
-        const q = query(collection(db, "users"), where("phone", "==", normalized));
-        const snap = await getDocs(q);
-        if (snap.empty) {
-          Alert.alert("Hata", "Telefon numarası bulunamadı");
-          return;
+        const snap = await firestore()
+          .collection("users")
+          .where("phone", "==", normalized)
+          .get();
+        if (!snap.empty) {
+          emailToLogin = snap.docs[0].data().email;
         }
-        emailToLogin = snap.docs[0].data().email;
       }
-      // 3) Username
+      // 📌 Kullanıcı adı
       else {
-        const q = query(collection(db, "users"), where("username", "==", identifier));
-        const snap = await getDocs(q);
-        if (snap.empty) {
-          Alert.alert("Hata", "Kullanıcı adı bulunamadı");
-          return;
+        const snap = await firestore()
+          .collection("users")
+          .where("username", "==", identifier)
+          .get();
+        if (!snap.empty) {
+          emailToLogin = snap.docs[0].data().email;
         }
-        emailToLogin = snap.docs[0].data().email;
       }
 
-      // ✅ Firebase Auth login
-      const userCredential = await signInWithEmailAndPassword(auth, emailToLogin, password);
-      const user = userCredential.user;
-
-      // 🔍 Firestore'dan kullanıcı bilgilerini çek
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (!userDoc.exists()) {
-        Alert.alert("Hata", "Kullanıcı Firestore'da bulunamadı!");
+      if (!emailToLogin) {
+        Alert.alert("Hata", "Kullanıcı bulunamadı!");
         return;
       }
 
-      const data = userDoc.data();
-      const createdAt = data.createdAt.toDate();
-      const now = new Date();
-      const diff = (now - createdAt) / (1000 * 60 * 60 * 24); // gün farkı
+      // ✅ Firebase Auth login
+      const userCredential = await auth().signInWithEmailAndPassword(emailToLogin, password);
+      const user = userCredential.user;
 
-      // 🔄 Email verified kontrolü
+      // 📌 Email verified kontrolü
       await user.reload();
       if (!user.emailVerified) {
-        if (diff > 2) {
-          // 2 gün geçtiyse hesap sil
-          await deleteDoc(doc(db, "users", user.uid));
-          await deleteUser(user);
-          Alert.alert("Hesap Silindi", "Doğrulama yapılmadığı için hesabın süresi doldu.");
-          navigation.replace("Register");
-          return;
-        } else {
-          Alert.alert("Doğrulama Gerekli", "Email adresini doğrulamadan Vault’a erişemezsin.");
-          navigation.replace("VerifyEmailPending");
-          return;
-        }
+        Alert.alert("Doğrulama Gerekli", "Email adresini doğrulamadan devam edemezsin.");
+        navigation.replace("VerifyEmailPending");
+        return;
       }
 
-      // ✅ Doğrulama başarılı → Vault’a yönlendir
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "Vault" }],
-      });
+      // 🔑 Token yenile
+      await user.getIdToken(true);
 
+      // ✅ Vault’a yönlendir
+      navigation.reset({ index: 0, routes: [{ name: "Vault" }] });
     } catch (error) {
       console.log("❌ Login Error:", error.code, error.message);
-      if (error.code === "auth/invalid-email") {
-        Alert.alert("Giriş Hatası", "Geçersiz email.");
-      } else if (error.code === "auth/user-not-found") {
-        Alert.alert("Giriş Hatası", "Böyle bir kullanıcı yok.");
+      if (error.code === "auth/user-not-found") {
+        Alert.alert("Giriş Hatası", "Kullanıcı bulunamadı.");
       } else if (error.code === "auth/wrong-password") {
-        Alert.alert("Giriş Hatası", "Şifre yanlış.");
+        Alert.alert("Giriş Hatası", "Şifre hatalı.");
+      } else if (error.code === "auth/too-many-requests") {
+        Alert.alert("Hata", "Çok fazla deneme yapıldı. Daha sonra dene.");
       } else {
         Alert.alert("Giriş Hatası", error.message);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -144,17 +130,23 @@ export default function LoginScreen({ navigation }) {
         placeholderTextColor={theme.colors.border}
         style={[
           styles.input,
-          { backgroundColor: theme.colors.card, borderColor: theme.colors.primary, color: theme.colors.text },
+          {
+            backgroundColor: theme.colors.card,
+            borderColor: theme.colors.primary,
+            color: theme.colors.text,
+          },
         ]}
         value={identifier}
         onChangeText={setIdentifier}
       />
 
-      {/* Password + Eye */}
-      <View style={[
-        styles.passwordContainer,
-        { borderColor: theme.colors.primary, backgroundColor: theme.colors.card },
-      ]}>
+      {/* Password */}
+      <View
+        style={[
+          styles.passwordContainer,
+          { borderColor: theme.colors.primary, backgroundColor: theme.colors.card },
+        ]}
+      >
         <TextInput
           placeholder="Şifre"
           placeholderTextColor={theme.colors.border}
@@ -165,25 +157,33 @@ export default function LoginScreen({ navigation }) {
         />
         <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
           <Image
-            source={showPassword ? require("../assets/icons/hide.png") : require("../assets/icons/eye.png")}
+            source={
+              showPassword
+                ? require("../assets/icons/hide.png")
+                : require("../assets/icons/eye.png")
+            }
             style={styles.eyeIcon}
           />
         </TouchableOpacity>
       </View>
 
       {/* Giriş Yap */}
-      <TouchableOpacity style={[styles.button, { backgroundColor: theme.colors.primary }]} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Giriş Yap</Text>
+      <TouchableOpacity
+        disabled={loading}
+        style={[styles.button, loading ? styles.buttonDisabled : { backgroundColor: theme.colors.primary }]}
+        onPress={handleLogin}
+      >
+        <Text style={styles.buttonText}>{loading ? "Bekleyin..." : "Giriş Yap"}</Text>
       </TouchableOpacity>
 
-      {/* Şifremi Unuttum */}
+      {/* Links */}
       <TouchableOpacity onPress={() => navigation.navigate("ForgotPassword")}>
-        <Text style={[styles.link, { color: theme.colors.primary, marginTop: 10 }]}>Şifremi Unuttum?</Text>
+        <Text style={[styles.link, { color: theme.colors.primary }]}>Şifremi Unuttum?</Text>
       </TouchableOpacity>
-
-      {/* Kayıt Ol */}
       <TouchableOpacity onPress={() => navigation.navigate("Register")}>
-        <Text style={[styles.link, { color: theme.colors.primary }]}>Hesabın yok mu? Kayıt Ol</Text>
+        <Text style={[styles.link, { color: theme.colors.primary }]}>
+          Hesabın yok mu? Kayıt Ol
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -214,6 +214,7 @@ const styles = StyleSheet.create({
   passwordInput: { flex: 1, fontSize: 16, paddingVertical: 12 },
   eyeIcon: { width: 24, height: 24, marginLeft: 8, resizeMode: "contain" },
   button: { width: "100%", padding: 16, borderRadius: 8, alignItems: "center" },
+  buttonDisabled: { backgroundColor: "gray" }, // 🔹 inline kaldırıldı
   buttonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
   link: { marginTop: 15, fontSize: 18 },
 });

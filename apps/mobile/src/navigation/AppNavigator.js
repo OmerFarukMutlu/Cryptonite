@@ -9,10 +9,8 @@ import LoginScreen from "../screens/LoginScreen";
 import RegisterScreen from "../screens/RegisterScreen";
 import VaultScreen from "../screens/VaultScreen";
 import SettingsScreen from "../screens/SettingsScreen";
-import ChangePasswordScreen from "../screens/ChangePasswordScreen";
 import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
-import VerifyCodeScreen from "../screens/VerifyCodeScreen";
-import VerifyEmailPendingScreen from "../screens/VerifyEmailPendingScreen"; // ✅ yeni ekran
+import VerifyEmailPendingScreen from "../screens/VerifyEmailPendingScreen";
 
 import { useThemeContext } from "../theme/ThemeContext";
 import { iconSize } from "../theme/theme";
@@ -29,25 +27,23 @@ const ThemeToggleButton = ({ isDark, toggleTheme }) => (
   </TouchableOpacity>
 );
 
-// 🔹 Wrapper componentler
-function HomeWrapper(props) { const { theme } = useThemeContext(); return <HomeScreen {...props} theme={theme} />; }
-function LoginWrapper(props) { const { theme } = useThemeContext(); return <LoginScreen {...props} theme={theme} />; }
-function RegisterWrapper(props) { const { theme } = useThemeContext(); return <RegisterScreen {...props} theme={theme} />; }
-function ForgotPasswordWrapper(props) { const { theme } = useThemeContext(); return <ForgotPasswordScreen {...props} theme={theme} />; }
-function VerifyCodeWrapper(props) { const { theme } = useThemeContext(); return <VerifyCodeScreen {...props} theme={theme} />; }
-function ChangePasswordWrapper(props) { const { theme } = useThemeContext(); return <ChangePasswordScreen {...props} theme={theme} />; }
-function VaultWrapper(props) { const { theme } = useThemeContext(); return <VaultScreen {...props} theme={theme} />; }
-function SettingsWrapper(props) { const { theme } = useThemeContext(); return <SettingsScreen {...props} theme={theme} />; }
-function VerifyEmailPendingWrapper(props) { const { theme } = useThemeContext(); return <VerifyEmailPendingScreen {...props} theme={theme} />; }
+// 🔹 Wrapper HOC
+const withTheme = (Component) => (props) => {
+  const { theme } = useThemeContext();
+  return <Component {...props} theme={theme} />;
+};
 
-// 🔹 HeaderRight fonksiyonu
+// 🔹 HeaderRight
 const getHeaderRight = (isDark, toggleTheme) => () =>
   <ThemeToggleButton isDark={isDark} toggleTheme={toggleTheme} />;
 
-// 🔹 Vault özel header (settings + theme)
+// 🔹 Vault özel header
 const getVaultHeaderOptions = (isDark, toggleTheme, navigation) => ({
   headerLeft: () => (
-    <TouchableOpacity style={styles.settingsButton} onPress={() => navigation.navigate("Settings")}>
+    <TouchableOpacity
+      style={styles.settingsButton}
+      onPress={() => navigation.navigate("Settings")}
+    >
       <Image source={require("../assets/icons/settings.png")} style={styles.settingsIcon} />
     </TouchableOpacity>
   ),
@@ -64,89 +60,69 @@ export default function AppNavigator() {
       <Stack.Navigator
         initialRouteName="Home"
         screenOptions={{
-          headerTitle: "Cryptonite",
           headerTitleAlign: "center",
-          headerStyle: { backgroundColor: "green" },
+          headerStyle: styles.headerStyle,
           headerTintColor: "white",
-          headerTitleStyle: { fontWeight: "normal", fontSize: 20 },
+          headerTitleStyle: styles.headerTitle,
+          animation: "none",          // 🔹 animasyonları kapattık
+          headerShadowVisible: false, // 🔹 iOS alt çizgi kaldırıldı
+          gestureEnabled: false,      // 🔹 swipe back kapalı (kayma olmasın)
         }}
       >
-        {/* Home */}
-        <Stack.Screen name="Home" component={HomeWrapper} options={{ headerShown: false }} />
+        <Stack.Screen
+          name="Home"
+          component={withTheme(HomeScreen)}
+          options={{ headerShown: false }}
+        />
 
-        {/* Login */}
         <Stack.Screen
           name="Login"
-          component={LoginWrapper}
+          component={withTheme(LoginScreen)}
           options={{
-            headerTitle: "Cryptonite",
-            headerBackTitleVisible: false,
+            headerTitle: "Giriş Yap",
             headerLeft: () => null,
             headerRight: getHeaderRight(isDark, toggleTheme),
           }}
         />
 
-        {/* Register */}
         <Stack.Screen
           name="Register"
-          component={RegisterWrapper}
+          component={withTheme(RegisterScreen)}
           options={{
-            headerTitle: "Cryptonite",
+            headerTitle: "Kayıt Ol",
             headerRight: getHeaderRight(isDark, toggleTheme),
           }}
         />
 
-        {/* Email Pending (Doğrulama Bekleme) */}
         <Stack.Screen
           name="VerifyEmailPending"
-          component={VerifyEmailPendingWrapper}
+          component={withTheme(VerifyEmailPendingScreen)}
           options={{
             headerTitle: "Email Doğrulama",
             headerRight: getHeaderRight(isDark, toggleTheme),
           }}
         />
 
-        {/* Kod Doğrulama (başka işler için saklıyoruz) */}
-        <Stack.Screen
-          name="VerifyCode"
-          component={VerifyCodeWrapper}
-          options={{
-            headerTitle: "Kod Doğrulama",
-            headerRight: getHeaderRight(isDark, toggleTheme),
-          }}
-        />
-
-        {/* Şifremi Unuttum */}
         <Stack.Screen
           name="ForgotPassword"
-          component={ForgotPasswordWrapper}
+          component={withTheme(ForgotPasswordScreen)}
           options={{
             headerTitle: "Şifremi Unuttum",
             headerRight: getHeaderRight(isDark, toggleTheme),
           }}
         />
 
-        {/* Şifre Değiştir */}
-        <Stack.Screen
-          name="ChangePassword"
-          component={ChangePasswordWrapper}
-          options={{
-            headerTitle: "Şifre Değiştir",
-            headerRight: getHeaderRight(isDark, toggleTheme),
-          }}
-        />
-
-        {/* Vault */}
         <Stack.Screen
           name="Vault"
-          component={VaultWrapper}
-          options={({ navigation }) => getVaultHeaderOptions(isDark, toggleTheme, navigation)}
+          component={withTheme(VaultScreen)}
+          options={({ navigation }) =>
+            getVaultHeaderOptions(isDark, toggleTheme, navigation)
+          }
         />
 
-        {/* Settings */}
         <Stack.Screen
           name="Settings"
-          component={SettingsWrapper}
+          component={withTheme(SettingsScreen)}
           options={{
             headerTitle: "Ayarlar",
             headerRight: getHeaderRight(isDark, toggleTheme),
@@ -158,6 +134,13 @@ export default function AppNavigator() {
 }
 
 const styles = StyleSheet.create({
+  headerStyle: {
+    backgroundColor: "green",
+  },
+  headerTitle: {
+    fontWeight: "normal",
+    fontSize: 20,
+  },
   themeButton: { marginRight: 15 },
   themeIcon: { width: iconSize + 4, height: iconSize + 4, resizeMode: "contain" },
   settingsButton: { marginLeft: 15 },

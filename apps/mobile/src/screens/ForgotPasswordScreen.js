@@ -1,49 +1,86 @@
-// screens/ForgotPasswordScreen.js
 import React, { useState, useContext } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { ThemeContext } from "../theme/ThemeContext";
-import { iconSize } from "../theme/theme";
+import auth from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
 
 export default function ForgotPasswordScreen({ navigation }) {
   const { theme } = useContext(ThemeContext);
-  const [contact, setContact] = useState("");
+  const [identifier, setIdentifier] = useState("");
 
-  const handleSendCode = () => {
-    // 🚀 Test için direkt VerifyCode'a yönlendir
-    navigation.navigate("VerifyCode", { from: "forgotPassword" });
+  const normalizePhone = (input) => {
+    let phone = input.replace(/\s+/g, "");
+    if (phone.startsWith("0") && phone.length === 11) {
+      return "+90" + phone.substring(1);
+    }
+    return phone;
+  };
+
+  const handleReset = async () => {
+    if (!identifier) {
+      Alert.alert("Hata", "Lütfen email / kullanıcı adı / telefon giriniz.");
+      return;
+    }
+
+    try {
+      let emailToSend = null;
+
+      // 📌 Email ise
+      if (identifier.includes("@")) {
+        emailToSend = identifier;
+      }
+      // 📌 Telefon ise
+      else if (/^\d+$/.test(identifier) || identifier.startsWith("+")) {
+        const normalized = normalizePhone(identifier);
+        const snap = await firestore().collection("users").where("phone", "==", normalized).get();
+        if (!snap.empty) {
+          emailToSend = snap.docs[0].data().email;
+        }
+      }
+      // 📌 Username ise
+      else {
+        const snap = await firestore().collection("users").where("username", "==", identifier).get();
+        if (!snap.empty) {
+          emailToSend = snap.docs[0].data().email;
+        }
+      }
+
+      if (!emailToSend) {
+        Alert.alert("Hata", "Bu bilgilere ait kullanıcı bulunamadı.");
+        return;
+      }
+
+      await auth().sendPasswordResetEmail(emailToSend);
+      Alert.alert("Başarılı", `Şifre sıfırlama maili ${emailToSend} adresine gönderildi.`);
+
+      // ✅ Replace yerine reset kullan → ekran kayması olmaz
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Login" }],
+      });
+
+    } catch (err) {
+      Alert.alert("Hata", err.message);
+    }
   };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      {/* Başlık + ikon */}
-      <View style={styles.headerRow}>
-        <Image
-          source={require("../assets/icons/forgot.png")} // ✅ kendi icon yolun
-          style={styles.headerIcon}
-        />
-        <Text style={[styles.title, { color: theme.colors.text }]}>Şifremi Unuttum</Text>
-      </View>
+      <Text style={[styles.title, { color: theme.colors.text }]}>Şifremi Unuttum</Text>
 
       <TextInput
-        style={[
-          styles.input,
-          {
-            borderColor: theme.colors.primary,
-            color: theme.colors.text,
-            backgroundColor: theme.colors.card,
-          },
-        ]}
-        placeholder="Email veya Telefon"
+        style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
+        placeholder="Email / Kullanıcı adı / Telefon"
         placeholderTextColor={theme.colors.border}
-        value={contact}
-        onChangeText={setContact}
+        value={identifier}
+        onChangeText={setIdentifier}
       />
 
       <TouchableOpacity
         style={[styles.button, { backgroundColor: theme.colors.primary }]}
-        onPress={handleSendCode}
+        onPress={handleReset}
       >
-        <Text style={styles.buttonText}>Kod Gönder</Text>
+        <Text style={styles.buttonText}>Şifre Sıfırlama Maili Gönder</Text>
       </TouchableOpacity>
     </View>
   );
@@ -51,21 +88,7 @@ export default function ForgotPasswordScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: "center", padding: 20 },
-
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center", // ✅ ortalar
-    marginBottom: 20,
-  },
-  headerIcon: {
-    width: iconSize + 4,
-    height: iconSize + 4,
-    resizeMode: "contain",
-    marginRight: 8,
-  },
-  title: { fontSize: 22, fontWeight: "bold" },
-
+  title: { fontSize: 22, fontWeight: "bold", marginBottom: 20, textAlign: "center" },
   input: {
     borderWidth: 1,
     borderRadius: 8,

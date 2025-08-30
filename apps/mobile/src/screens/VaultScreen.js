@@ -15,76 +15,90 @@ import Clipboard from "@react-native-clipboard/clipboard";
 import { ThemeContext } from "../theme/ThemeContext";
 import { iconSize } from "../theme/theme";
 
-// Firebase
-import { auth, db } from "../firebase/firebaseConfig";
-import { doc, getDoc, deleteDoc } from "firebase/firestore";
-import { deleteUser } from "firebase/auth";
-
-// Örnek veri (geçici)
-const initialVaultItems = [
-  { id: "1", site: "gmail.com", username: "testuser@gmail.com", password: "123456" },
-  { id: "2", site: "github.com", username: "coder123", password: "abcdef" },
-];
+import auth from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
+import { appMappings } from "../utils/appMappings";
+import { Picker } from "@react-native-picker/picker";
 
 export default function VaultScreen({ navigation }) {
   const { theme } = useContext(ThemeContext);
-  const [vaultItems, setVaultItems] = useState(initialVaultItems);
+  const [vaultItems, setVaultItems] = useState([]);
   const [visiblePasswords, setVisiblePasswords] = useState({});
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [currentItem, setCurrentItem] = useState(null);
-  const [newItem, setNewItem] = useState({ site: "", username: "", password: "" });
+  const [newItem, setNewItem] = useState({ appName: "", username: "", password: "" });
   const [search, setSearch] = useState("");
-  const [filteredItems, setFilteredItems] = useState(vaultItems);
+  const [filteredItems, setFilteredItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Kullanıcı doğrulama kontrolü
+  const appNames = Object.keys(appMappings);
+
+  // ✅ Kullanıcı doğrulama + Firestore dinleme
   useEffect(() => {
-    const checkVerification = async () => {
+    let unsubscribeVault = null;
+
+    const unsubscribeAuth = auth().onAuthStateChanged(async (user) => {
       try {
-        const user = auth.currentUser;
         if (!user) {
-          navigation.replace("Login");
+          setVaultItems([]);
+          if (unsubscribeVault) unsubscribeVault();
+          navigation.reset({ index: 0, routes: [{ name: "Login" }] });
           return;
         }
-
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (!userDoc.exists()) {
-          navigation.replace("Login");
-          return;
-        }
-
-        const data = userDoc.data();
-        const createdAt = data.createdAt.toDate();
-        const now = new Date();
-        const diff = (now - createdAt) / (1000 * 60 * 60 * 24); // gün farkı
 
         await user.reload();
-        const isEmailVerified = user.emailVerified;
+        const refreshedUser = auth().currentUser;
 
-        if (!isEmailVerified || !data.verified) {
-          if (diff > 2) {
-            // 2 gün geçtiyse hesap sil
-            await deleteDoc(doc(db, "users", user.uid));
-            await deleteUser(user);
-            Alert.alert("Hesap Silindi", "Doğrulama yapılmadığı için hesabın süresi doldu.");
-            navigation.replace("Register");
-            return;
-          } else {
-            // Doğrulama yapılmadı ama süre dolmamış
-            Alert.alert("Doğrulama Gerekli", "Vault’a erişmek için emailini doğrulamalısın.");
-            navigation.replace("VerifyEmailPending");
-            return;
-          }
+        if (!refreshedUser.emailVerified) {
+          setVaultItems([]);
+          if (unsubscribeVault) unsubscribeVault();
+          Alert.alert("Doğrulama Gerekli", "Vault’a erişmek için emailini doğrulamalısın.");
+          navigation.reset({ index: 0, routes: [{ name: "VerifyEmailPending" }] });
+          return;
         }
-        setLoading(false);
+
+        unsubscribeVault = firestore()
+          .collection("users")
+          .doc(refreshedUser.uid)
+          .collection("vault")
+          .onSnapshot(
+            (snapshot) => {
+              if (!snapshot || snapshot.empty) {
+                setVaultItems([]);
+                setFilteredItems([]);
+                setLoading(false);
+                return;
+              }
+              const data = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+              }));
+              setVaultItems(data);
+              setFilteredItems(data);
+              setLoading(false);
+            },
+            (error) => {
+              console.error("🔥 Firestore onSnapshot error:", error);
+              if (error.code !== "permission-denied") {
+                Alert.alert("Hata", "Vault verilerine erişim iznin yok.");
+              }
+              setLoading(false);
+            }
+          );
       } catch (err) {
         console.error(err);
+        setVaultItems([]);
+        if (unsubscribeVault) unsubscribeVault();
         Alert.alert("Hata", err.message);
-        navigation.replace("Login");
+        navigation.reset({ index: 0, routes: [{ name: "Login" }] });
       }
+    });
+
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeVault) unsubscribeVault();
     };
-    checkVerification();
   }, [navigation]);
 
   // 🔹 Şifre göster/gizle
@@ -98,44 +112,68 @@ export default function VaultScreen({ navigation }) {
     Alert.alert(`${label} kopyalandı!`, text);
   };
 
-  // 🔹 Edit modal aç
-  const openEditModal = (item) => {
-    setCurrentItem({ ...item });
-    setEditModalVisible(true);
-  };
-
   // 🔹 Düzenlemeyi kaydet
-  const saveEdit = () => {
-    if (!currentItem.site || !currentItem.username || !currentItem.password) {
+  const saveEdit = async () => {
+    const user = auth().currentUser;
+    if (!user || !currentItem) return;
+
+    if (!currentItem.appName || !currentItem.username || !currentItem.password) {
       Alert.alert("Eksik bilgi", "Tüm alanları doldurun.");
       return;
     }
-    const updated = vaultItems.map((v) =>
-      v.id === currentItem.id ? currentItem : v
-    );
-    setVaultItems(updated);
-    setFilteredItems(updated);
+
+    const mapping = appMappings[currentItem.appName];
+    const packageName = mapping?.packageName || null;
+    const url = mapping?.url || "";
+
+    await firestore()
+      .collection("users")
+      .doc(user.uid)
+      .collection("vault")
+      .doc(currentItem.id)
+      .update({
+        appName: currentItem.appName,
+        username: currentItem.username,
+        password: currentItem.password,
+        url,
+        packageName,
+      });
+
+    setCurrentItem(null);
     setEditModalVisible(false);
   };
 
   // 🔹 Sil
-  const deleteItem = (id) => {
-    const updated = vaultItems.filter((v) => v.id !== id);
-    setVaultItems(updated);
-    setFilteredItems(updated);
+  const deleteItem = async (id) => {
+    const user = auth().currentUser;
+    if (!user) return;
+
+    await firestore().collection("users").doc(user.uid).collection("vault").doc(id).delete();
   };
 
   // 🔹 Yeni kayıt ekle
-  const addItem = () => {
-    if (!newItem.site || !newItem.username || !newItem.password) {
+  const addItem = async () => {
+    const user = auth().currentUser;
+    if (!user) return;
+
+    if (!newItem.appName || !newItem.username || !newItem.password) {
       Alert.alert("Eksik bilgi", "Lütfen tüm alanları doldurun.");
       return;
     }
-    const id = (vaultItems.length + 1).toString();
-    const updated = [...vaultItems, { id, ...newItem }];
-    setVaultItems(updated);
-    setFilteredItems(updated);
-    setNewItem({ site: "", username: "", password: "" });
+
+    const mapping = appMappings[newItem.appName];
+    const packageName = mapping?.packageName || null;
+    const url = mapping?.url || "";
+
+    await firestore().collection("users").doc(user.uid).collection("vault").add({
+      appName: newItem.appName,
+      packageName,
+      url,
+      username: newItem.username,
+      password: newItem.password,
+    });
+
+    setNewItem({ appName: "", username: "", password: "" });
     setAddModalVisible(false);
   };
 
@@ -147,13 +185,12 @@ export default function VaultScreen({ navigation }) {
     }
     const results = vaultItems.filter(
       (item) =>
-        item.site.toLowerCase().includes(search.toLowerCase()) ||
-        item.username.toLowerCase().includes(search.toLowerCase())
+        (item.appName && item.appName.toLowerCase().includes(search.toLowerCase())) ||
+        (item.username && item.username.toLowerCase().includes(search.toLowerCase()))
     );
     setFilteredItems(results);
   };
 
-  // 🔹 Arama sıfırla
   const clearSearch = () => {
     setSearch("");
     setFilteredItems(vaultItems);
@@ -174,9 +211,9 @@ export default function VaultScreen({ navigation }) {
           { borderColor: theme.colors.primary, backgroundColor: theme.colors.card },
         ]}
       >
-        {/* Bilgiler */}
         <View style={styles.center}>
-          <Text style={[styles.site, { color: theme.colors.text }]}>{item.site}</Text>
+          <Text style={[styles.site, { color: theme.colors.text }]}>{item.appName}</Text>
+          <Text style={[styles.urlText, { color: theme.colors.text }]}>{item.url}</Text>
 
           <View style={styles.row}>
             <Image source={icon} style={styles.smallIcon} />
@@ -193,7 +230,6 @@ export default function VaultScreen({ navigation }) {
           </View>
         </View>
 
-        {/* Alt kısım: aksiyon butonları */}
         <View style={styles.actions}>
           <TouchableOpacity onPress={() => copyToClipboard(item.username, label)}>
             <Image source={icon} style={styles.icon} />
@@ -211,7 +247,7 @@ export default function VaultScreen({ navigation }) {
               style={styles.icon}
             />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => openEditModal(item)}>
+          <TouchableOpacity onPress={() => { setCurrentItem(item); setEditModalVisible(true); }}>
             <Image source={require("../assets/icons/edit.png")} style={styles.icon} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => deleteItem(item.id)}>
@@ -225,7 +261,7 @@ export default function VaultScreen({ navigation }) {
   if (loading) {
     return (
       <View style={styles.container}>
-        <Text>Kontrol ediliyor...</Text>
+        <Text>Yükleniyor...</Text>
       </View>
     );
   }
@@ -239,7 +275,6 @@ export default function VaultScreen({ navigation }) {
           <Text style={[styles.headerText, { color: theme.colors.text }]}>Vault</Text>
         </View>
 
-        {/* ✅ Ekle butonu */}
         <TouchableOpacity
           style={[styles.addButton, { backgroundColor: theme.colors.button.primary }]}
           onPress={() => setAddModalVisible(true)}
@@ -251,11 +286,8 @@ export default function VaultScreen({ navigation }) {
       {/* 🔍 Arama */}
       <View style={styles.searchRow}>
         <TextInput
-          style={[
-            styles.searchInput,
-            { borderColor: theme.colors.primary, color: theme.colors.text },
-          ]}
-          placeholder="Ara..."
+          style={[styles.searchInput, { borderColor: theme.colors.primary, color: theme.colors.text }]}
+          placeholder="Ara (Uygulama adı, kullanıcı)..."
           placeholderTextColor={theme.colors.border}
           value={search}
           onChangeText={setSearch}
@@ -269,20 +301,30 @@ export default function VaultScreen({ navigation }) {
         )}
       </View>
 
-      <FlatList data={filteredItems} renderItem={renderItem} keyExtractor={(item) => item.id} />
+      {/* 🔹 Liste veya boş mesaj */}
+      {filteredItems.length === 0 ? (
+        <Text style={[styles.emptyText, { color: theme.colors.text }]}>Henüz kayıt yok.</Text>
+      ) : (
+        <FlatList data={filteredItems} renderItem={renderItem} keyExtractor={(item) => item.id} />
+      )}
 
       {/* ➕ Add Modal */}
       <Modal visible={addModalVisible} animationType="slide" transparent>
         <View style={styles.modalContainer}>
           <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
             <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Yeni Kayıt Ekle</Text>
-            <TextInput
-              style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
-              placeholder="Site"
-              placeholderTextColor={theme.colors.border}
-              value={newItem.site}
-              onChangeText={(text) => setNewItem((prev) => ({ ...prev, site: text }))}
-            />
+
+            <Picker
+              selectedValue={newItem.appName}
+              onValueChange={(value) => setNewItem((prev) => ({ ...prev, appName: value }))}
+              style={[styles.picker, { color: theme.colors.text }]}
+            >
+              <Picker.Item label="-- Uygulama Seç --" value="" />
+              {appNames.map((name) => (
+                <Picker.Item key={name} label={name} value={name} />
+              ))}
+            </Picker>
+
             <TextInput
               style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
               placeholder="Kullanıcı Adı / Email"
@@ -298,6 +340,7 @@ export default function VaultScreen({ navigation }) {
               value={newItem.password}
               onChangeText={(text) => setNewItem((prev) => ({ ...prev, password: text }))}
             />
+
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: theme.colors.button.danger }]}
@@ -321,13 +364,18 @@ export default function VaultScreen({ navigation }) {
         <View style={styles.modalContainer}>
           <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
             <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Kaydı Düzenle</Text>
-            <TextInput
-              style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
-              placeholder="Site"
-              placeholderTextColor={theme.colors.border}
-              value={currentItem?.site}
-              onChangeText={(text) => setCurrentItem((prev) => ({ ...prev, site: text }))}
-            />
+
+            <Picker
+              selectedValue={currentItem?.appName || ""}
+              onValueChange={(value) => setCurrentItem((prev) => ({ ...prev, appName: value }))}
+              style={[styles.picker, { color: theme.colors.text }]}
+            >
+              <Picker.Item label="-- Uygulama Seç --" value="" />
+              {appNames.map((name) => (
+                <Picker.Item key={name} label={name} value={name} />
+              ))}
+            </Picker>
+
             <TextInput
               style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
               placeholder="Kullanıcı Adı / Email"
@@ -343,6 +391,7 @@ export default function VaultScreen({ navigation }) {
               value={currentItem?.password}
               onChangeText={(text) => setCurrentItem((prev) => ({ ...prev, password: text }))}
             />
+
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: theme.colors.button.danger }]}
@@ -366,7 +415,12 @@ export default function VaultScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
-  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
   lockIcon: { width: iconSize + 4, height: iconSize + 4, marginRight: 8 },
   headerText: { fontSize: 24, fontWeight: "bold" },
   addButton: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10 },
@@ -379,10 +433,23 @@ const styles = StyleSheet.create({
   site: { fontSize: 18, fontWeight: "bold" },
   user: { fontSize: 16 },
   pass: { fontSize: 16 },
+  urlText: { fontSize: 12 }, // 🔹 inline kaldırıldı
   smallIcon: { width: iconSize - 8, height: iconSize - 8, resizeMode: "contain" },
-  actions: { flexDirection: "row", justifyContent: "space-around", marginTop: 12, paddingTop: 8, borderTopWidth: 1, borderColor: "#ddd" },
+  actions: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginTop: 12,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderColor: "#ddd",
+  },
   icon: { width: iconSize, height: iconSize, resizeMode: "contain" },
-  modalContainer: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center" },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
   modalContent: { width: "85%", padding: 20, borderRadius: 10 },
   modalTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 10 },
   input: { borderWidth: 1, padding: 12, borderRadius: 5, marginBottom: 12, fontSize: 16 },
@@ -392,4 +459,6 @@ const styles = StyleSheet.create({
   center: { alignItems: "center" },
   row: { flexDirection: "row", alignItems: "center", marginTop: 4 },
   ml6: { marginLeft: 6 },
+  emptyText: { textAlign: "center", marginTop: 20, fontSize: 14 }, // 🔹 inline kaldırıldı
+  picker: { marginBottom: 12 }, // 🔹 margin inline kaldırıldı
 });
