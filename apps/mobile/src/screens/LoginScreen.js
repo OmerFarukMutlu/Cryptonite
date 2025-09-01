@@ -33,6 +33,7 @@ export default function LoginScreen({ navigation }) {
     return () => backHandler.remove();
   }, [navigation]);
 
+  // Telefon numarasını normalize et
   const normalizePhoneForLogin = (input) => {
     let phone = input.replace(/\s+/g, "");
     if (phone.startsWith("0") && phone.length === 11) {
@@ -41,6 +42,7 @@ export default function LoginScreen({ navigation }) {
     return phone;
   };
 
+  // 🔑 Login işlemi
   const handleLogin = async () => {
     if (loading) return;
     if (!identifier || !password) {
@@ -52,26 +54,28 @@ export default function LoginScreen({ navigation }) {
     try {
       let emailToLogin = null;
 
-      // 📌 Email
+      // 📌 Email kontrolü
       if (identifier.includes("@")) {
-        emailToLogin = identifier;
+        emailToLogin = identifier.trim().toLowerCase();
       }
-      // 📌 Telefon
+      // 📌 Telefon kontrolü
       else if (/^\d+$/.test(identifier) || identifier.startsWith("+")) {
         const normalized = normalizePhoneForLogin(identifier);
         const snap = await firestore()
           .collection("users")
           .where("phone", "==", normalized)
+          .limit(1)
           .get();
         if (!snap.empty) {
           emailToLogin = snap.docs[0].data().email;
         }
       }
-      // 📌 Kullanıcı adı
+      // 📌 Kullanıcı adı kontrolü
       else {
         const snap = await firestore()
           .collection("users")
           .where("username", "==", identifier)
+          .limit(1)
           .get();
         if (!snap.empty) {
           emailToLogin = snap.docs[0].data().email;
@@ -87,7 +91,7 @@ export default function LoginScreen({ navigation }) {
       const userCredential = await auth().signInWithEmailAndPassword(emailToLogin, password);
       const user = userCredential.user;
 
-      // 📌 Email verified kontrolü
+      // 📌 Email doğrulama kontrolü
       await user.reload();
       if (!user.emailVerified) {
         Alert.alert("Doğrulama Gerekli", "Email adresini doğrulamadan devam edemezsin.");
@@ -98,7 +102,7 @@ export default function LoginScreen({ navigation }) {
       // 🔑 Token yenile
       await user.getIdToken(true);
 
-      // ✅ Vault’a yönlendir
+      // ✅ Vault ekranına yönlendir
       navigation.reset({ index: 0, routes: [{ name: "Vault" }] });
     } catch (error) {
       console.log("❌ Login Error:", error.code, error.message);
@@ -138,6 +142,7 @@ export default function LoginScreen({ navigation }) {
         ]}
         value={identifier}
         onChangeText={setIdentifier}
+        autoCapitalize="none"
       />
 
       {/* Password */}
@@ -170,7 +175,10 @@ export default function LoginScreen({ navigation }) {
       {/* Giriş Yap */}
       <TouchableOpacity
         disabled={loading}
-        style={[styles.button, loading ? styles.buttonDisabled : { backgroundColor: theme.colors.primary }]}
+        style={[
+          styles.button,
+          loading ? styles.buttonDisabled : { backgroundColor: theme.colors.primary },
+        ]}
         onPress={handleLogin}
       >
         <Text style={styles.buttonText}>{loading ? "Bekleyin..." : "Giriş Yap"}</Text>
@@ -214,7 +222,7 @@ const styles = StyleSheet.create({
   passwordInput: { flex: 1, fontSize: 16, paddingVertical: 12 },
   eyeIcon: { width: 24, height: 24, marginLeft: 8, resizeMode: "contain" },
   button: { width: "100%", padding: 16, borderRadius: 8, alignItems: "center" },
-  buttonDisabled: { backgroundColor: "gray" }, // 🔹 inline kaldırıldı
+  buttonDisabled: { backgroundColor: "gray" },
   buttonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
   link: { marginTop: 15, fontSize: 18 },
 });

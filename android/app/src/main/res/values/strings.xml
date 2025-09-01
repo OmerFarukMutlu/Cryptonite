@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Cryptonite</string>
+
+    <!-- Autofill servis açıklaması -->
+    <string name="autofill_service_description">
+        Cryptonite ile otomatik doldurma servisi
+    </string>
 </resources>

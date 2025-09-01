@@ -7,12 +7,32 @@ import {
   StyleSheet,
   Image,
   StatusBar,
+  Platform,
+  Alert,
+  NativeModules,
 } from "react-native";
 import { useThemeContext } from "../theme/ThemeContext";
 import { iconSize } from "../theme/theme";
 
+const { AutofillModule } = NativeModules;
+
 export default function HomeScreen({ navigation }) {
   const { theme, isDark, toggleTheme } = useThemeContext();
+
+  const openAutofillSettings = () => {
+    if (Platform.OS === "android") {
+      if (AutofillModule?.openAutofillSettings) {
+        AutofillModule.openAutofillSettings();
+      } else {
+        Alert.alert("Hata", String("Autofill ayar modülü yüklenemedi."));
+      }
+    } else {
+      Alert.alert(
+        "Bilgi",
+        String("iOS tarafında Ayarlar > Parolalar & Otomatik Doldurma üzerinden etkinleştirin.")
+      );
+    }
+  };
 
   return (
     <View style={[styles.background, { backgroundColor: theme.colors.background }]}>
@@ -35,16 +55,24 @@ export default function HomeScreen({ navigation }) {
       </TouchableOpacity>
 
       {/* Logo */}
-      <Image
-        source={require("../assets/icons/shield.png")}
-        style={styles.logo}
-      />
+      <Image source={require("../assets/icons/shield.png")} style={styles.logo} />
 
       {/* Başlık */}
       <Text style={[styles.title, { color: theme.colors.text }]}>Cryptonite</Text>
-      <Text style={[styles.subtitle, { color: theme.colors.text }]}>
-        Dijital Kasanız
+      <Text style={[styles.subtitle, { color: theme.colors.text }]}>Dijital Kasanız</Text>
+
+      {/* Bilgilendirme */}
+      <Text style={[styles.infoText, { color: theme.colors.text }]}>
+        {"Uygulamayı kullanabilmek için cihaz ayarlarından\nCryptonite’i otomatik doldurma sağlayıcısı olarak seçin."}
       </Text>
+
+      {/* Otomatik Doldurma Ayarları Butonu */}
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: theme.colors.button.primary }]}
+        onPress={openAutofillSettings}
+      >
+        <Text style={styles.buttonText}>Otomatik Doldurma Ayarlarını Aç</Text>
+      </TouchableOpacity>
 
       {/* Giriş */}
       <TouchableOpacity
@@ -70,6 +98,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 20,
   },
   themeButton: {
     position: "absolute",
@@ -89,17 +118,23 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   title: { fontSize: 32, fontWeight: "bold", marginBottom: 8 },
-  subtitle: { fontSize: 16, marginBottom: 40 },
+  subtitle: { fontSize: 16, marginBottom: 20 },
+  infoText: { fontSize: 14, textAlign: "center", marginBottom: 20 },
   button: {
     padding: 16,
     borderRadius: 25,
-    width: "70%",
+    width: "90%",
     marginBottom: 15,
     alignItems: "center",
     elevation: 6,
-    shadowColor: "#39FF14", // neon efekt (dark mode’da daha belirgin)
+    shadowColor: "#39FF14",
     shadowOpacity: 0.6,
     shadowRadius: 6,
   },
-  buttonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
 });

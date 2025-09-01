@@ -14,7 +14,7 @@ import { ThemeContext } from "../theme/ThemeContext";
 import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 
-export default function SettingsScreen({ navigation }) {
+export default function SettingsScreen() {
   const { theme } = useContext(ThemeContext);
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
@@ -59,7 +59,10 @@ export default function SettingsScreen({ navigation }) {
   const handleChangePassword = async () => {
     try {
       const user = auth().currentUser;
-      if (!user) return;
+      if (!user?.email) {
+        Alert.alert("Hata", "Kullanıcı email adresi bulunamadı.");
+        return;
+      }
       await auth().sendPasswordResetEmail(user.email);
       Alert.alert("Şifre Değişikliği", "Şifre yenileme linki e-posta adresine gönderildi.");
     } catch (err) {
@@ -68,22 +71,24 @@ export default function SettingsScreen({ navigation }) {
   };
 
   const handleLogout = async () => {
-    await auth().signOut();
-    navigation.replace("Login");
+    try {
+      await auth().signOut();
+      // App.js -> onAuthStateChanged user=null olduğunda LoginScreen açılacak
+    } catch (err) {
+      Alert.alert("Hata", err.message);
+    }
   };
 
   return (
     <ScrollView
-      contentContainerStyle={[
-        styles.container,
-        { backgroundColor: theme.colors.background },
-      ]}
+      style={{ flex: 1, backgroundColor: theme.colors.background }}
+      contentContainerStyle={styles.container}
     >
       {/* Başlık + ikon */}
       <View style={styles.headerRow}>
         <Image
           source={require("../assets/icons/settings.png")}
-          style={styles.headerIcon} // ❌ tintColor yok → orijinal renk korunur
+          style={styles.headerIcon}
         />
         <Text style={[styles.title, { color: theme.colors.text }]}>Ayarlar</Text>
       </View>
@@ -94,6 +99,9 @@ export default function SettingsScreen({ navigation }) {
         placeholderTextColor={theme.colors.border}
         value={name}
         onChangeText={setName}
+        autoComplete="off"
+        importantForAutofill="no"
+        textContentType="none"
       />
       <TextInput
         style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
@@ -101,6 +109,9 @@ export default function SettingsScreen({ navigation }) {
         placeholderTextColor={theme.colors.border}
         value={username}
         onChangeText={setUsername}
+        autoComplete="off"
+        importantForAutofill="no"
+        textContentType="none"
       />
       <TextInput
         style={[styles.input, { borderColor: theme.colors.primary, color: theme.colors.text }]}
@@ -108,6 +119,10 @@ export default function SettingsScreen({ navigation }) {
         placeholderTextColor={theme.colors.border}
         value={phone}
         onChangeText={setPhone}
+        keyboardType="phone-pad"
+        autoComplete="off"
+        importantForAutofill="no"
+        textContentType="none"
       />
       <TextInput
         style={[
@@ -117,13 +132,19 @@ export default function SettingsScreen({ navigation }) {
         ]}
         value={email}
         editable={false}
+        autoComplete="off"
+        importantForAutofill="no"
+        textContentType="none"
       />
 
       <TouchableOpacity style={[styles.button, styles.saveButton]} onPress={handleSave}>
         <Text style={styles.buttonText}>Bilgileri Kaydet</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={[styles.button, styles.changePassButton]} onPress={handleChangePassword}>
+      <TouchableOpacity
+        style={[styles.button, styles.changePassButton]}
+        onPress={handleChangePassword}
+      >
         <Text style={styles.buttonText}>Şifre Değiştir</Text>
       </TouchableOpacity>
 
@@ -136,17 +157,8 @@ export default function SettingsScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flexGrow: 1, padding: 20, alignItems: "center" },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  headerIcon: {
-    width: 26,
-    height: 26,
-    marginRight: 8,
-    resizeMode: "contain", // orijinal görünüm bozulmasın
-  },
+  headerRow: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
+  headerIcon: { width: 26, height: 26, marginRight: 8, resizeMode: "contain" },
   title: { fontSize: 22, fontWeight: "bold" },
   input: {
     width: "100%",
@@ -156,9 +168,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     fontSize: 16,
   },
-  emailInput: {
-    backgroundColor: "#eee",
-  },
+  emailInput: { backgroundColor: "#eee" },
   button: {
     width: "100%",
     padding: 14,

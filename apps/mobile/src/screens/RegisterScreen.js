@@ -48,14 +48,11 @@ export default function RegisterScreen({ navigation }) {
     }
 
     try {
-      // 🔹 Kullanıcı oluştur
       const userCredential = await auth().createUserWithEmailAndPassword(email, password);
       const user = userCredential.user;
 
-      // 🔑 İlk token refresh → updateEmail / updatePassword gibi işlemler için "recent login" garantisi
       await user.getIdToken(true);
 
-      // 🔹 Firestore’a kaydet
       await firestore().collection("users").doc(user.uid).set({
         name,
         username,
@@ -64,11 +61,9 @@ export default function RegisterScreen({ navigation }) {
         createdAt: firestore.FieldValue.serverTimestamp(),
       });
 
-      // 🔹 Email doğrulama gönder
       await user.sendEmailVerification();
       Alert.alert("Doğrulama Gönderildi", "Email adresini kontrol et!");
 
-      // 🔹 Doğrulama bekleme ekranına yönlendir
       navigation.replace("VerifyEmailPending");
 
     } catch (error) {
@@ -100,12 +95,28 @@ export default function RegisterScreen({ navigation }) {
 
         {/* Ad */}
         <View style={[styles.inputContainer, { borderColor: theme.colors.primary }]}>
-          <TextInput placeholder="Ad" value={name} onChangeText={setName} style={styles.textInput}/>
+          <TextInput
+            placeholder="Ad"
+            value={name}
+            onChangeText={setName}
+            style={styles.textInput}
+            autoComplete="off"
+            importantForAutofill="no"
+            textContentType="none"
+          />
         </View>
 
         {/* Kullanıcı adı */}
         <View style={[styles.inputContainer, { borderColor: theme.colors.primary }]}>
-          <TextInput placeholder="Kullanıcı Adı" value={username} onChangeText={setUsername} style={styles.textInput}/>
+          <TextInput
+            placeholder="Kullanıcı Adı"
+            value={username}
+            onChangeText={setUsername}
+            style={styles.textInput}
+            autoComplete="off"
+            importantForAutofill="no"
+            textContentType="none"
+          />
         </View>
 
         {/* Telefon */}
@@ -122,6 +133,9 @@ export default function RegisterScreen({ navigation }) {
             keyboardType="number-pad"
             maxLength={10}
             style={styles.phoneInput}
+            autoComplete="off"
+            importantForAutofill="no"
+            textContentType="none"
           />
         </View>
 
@@ -133,6 +147,9 @@ export default function RegisterScreen({ navigation }) {
             onChangeText={setEmail}
             style={styles.textInput}
             keyboardType="email-address"
+            autoComplete="off"
+            importantForAutofill="no"
+            textContentType="none"
           />
         </View>
 
@@ -144,6 +161,9 @@ export default function RegisterScreen({ navigation }) {
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
             style={styles.textInput}
+            autoComplete="off"
+            importantForAutofill="no"
+            textContentType="none"
           />
           <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
             <Image
@@ -161,6 +181,9 @@ export default function RegisterScreen({ navigation }) {
             onChangeText={setConfirmPassword}
             secureTextEntry={!showConfirmPassword}
             style={styles.textInput}
+            autoComplete="off"
+            importantForAutofill="no"
+            textContentType="none"
           />
           <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
             <Image

@@ -52,82 +52,82 @@ const getVaultHeaderOptions = (isDark, toggleTheme, navigation) => ({
   headerTitleAlign: "center",
 });
 
-export default function AppNavigator() {
+export default function AppNavigator({ user }) {
   const { theme, isDark, toggleTheme } = useThemeContext();
 
   return (
     <NavigationContainer theme={theme}>
       <Stack.Navigator
-        initialRouteName="Home"
         screenOptions={{
           headerTitleAlign: "center",
           headerStyle: styles.headerStyle,
           headerTintColor: "white",
           headerTitleStyle: styles.headerTitle,
-          animation: "none",          // 🔹 animasyonları kapattık
-          headerShadowVisible: false, // 🔹 iOS alt çizgi kaldırıldı
-          gestureEnabled: false,      // 🔹 swipe back kapalı (kayma olmasın)
+          animation: "none",
+          headerShadowVisible: false,
+          gestureEnabled: false,
         }}
       >
-        <Stack.Screen
-          name="Home"
-          component={withTheme(HomeScreen)}
-          options={{ headerShown: false }}
-        />
-
-        <Stack.Screen
-          name="Login"
-          component={withTheme(LoginScreen)}
-          options={{
-            headerTitle: "Giriş Yap",
-            headerLeft: () => null,
-            headerRight: getHeaderRight(isDark, toggleTheme),
-          }}
-        />
-
-        <Stack.Screen
-          name="Register"
-          component={withTheme(RegisterScreen)}
-          options={{
-            headerTitle: "Kayıt Ol",
-            headerRight: getHeaderRight(isDark, toggleTheme),
-          }}
-        />
-
-        <Stack.Screen
-          name="VerifyEmailPending"
-          component={withTheme(VerifyEmailPendingScreen)}
-          options={{
-            headerTitle: "Email Doğrulama",
-            headerRight: getHeaderRight(isDark, toggleTheme),
-          }}
-        />
-
-        <Stack.Screen
-          name="ForgotPassword"
-          component={withTheme(ForgotPasswordScreen)}
-          options={{
-            headerTitle: "Şifremi Unuttum",
-            headerRight: getHeaderRight(isDark, toggleTheme),
-          }}
-        />
-
-        <Stack.Screen
-          name="Vault"
-          component={withTheme(VaultScreen)}
-          options={({ navigation }) =>
-            getVaultHeaderOptions(isDark, toggleTheme, navigation)
-          }
-        />
-
-        <Stack.Screen
-          name="Settings"
-          component={withTheme(SettingsScreen)}
-          options={{
-            headerTitle: "Ayarlar",
-            headerRight: getHeaderRight(isDark, toggleTheme),
-          }}
-        />
+        {user ? (
+          <>
+            <Stack.Screen
+              name="Vault"
+              component={withTheme(VaultScreen)}
+              options={({ navigation }) =>
+                getVaultHeaderOptions(isDark, toggleTheme, navigation)
+              }
+            />
+            <Stack.Screen
+              name="Settings"
+              component={withTheme(SettingsScreen)}
+              options={{
+                headerTitle: "Ayarlar",
+                headerRight: getHeaderRight(isDark, toggleTheme),
+              }}
+            />
+          </>
+        ) : (
+          <>
+            <Stack.Screen
+              name="Login"
+              component={withTheme(LoginScreen)}
+              options={{
+                headerTitle: "Giriş Yap",
+                headerLeft: () => null,
+                headerRight: getHeaderRight(isDark, toggleTheme),
+              }}
+            />
+            <Stack.Screen
+              name="Register"
+              component={withTheme(RegisterScreen)}
+              options={{
+                headerTitle: "Kayıt Ol",
+                headerRight: getHeaderRight(isDark, toggleTheme),
+              }}
+            />
+            <Stack.Screen
+              name="VerifyEmailPending"
+              component={withTheme(VerifyEmailPendingScreen)}
+              options={{
+                headerTitle: "Email Doğrulama",
+                headerRight: getHeaderRight(isDark, toggleTheme),
+              }}
+            />
+            <Stack.Screen
+              name="ForgotPassword"
+              component={withTheme(ForgotPasswordScreen)}
+              options={{
+                headerTitle: "Şifremi Unuttum",
+                headerRight: getHeaderRight(isDark, toggleTheme),
+              }}
+            />
+            <Stack.Screen
+              name="Home"
+              component={withTheme(HomeScreen)}
+              options={{ headerShown: false }}
+            />
+          </>
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );
