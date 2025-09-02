@@ -39,7 +39,7 @@ export default function VerifyEmailPendingScreen({ navigation }) {
       if (user) {
         await user.sendEmailVerification();
         Alert.alert("Tekrar Gönderildi", "Mail kutunu (Spam dahil) kontrol et!");
-        setCooldown(60); // 60 saniye cooldown
+        setCooldown(60);
       }
     } catch (err) {
       Alert.alert("Hata", err.message);
@@ -58,18 +58,17 @@ export default function VerifyEmailPendingScreen({ navigation }) {
         return;
       }
 
-      // Küçük delay (bazı durumlarda firebase cache’i hemen güncellemiyor)
       await new Promise((res) => setTimeout(res, 500));
-
       await user.reload();
-      const refreshedUser = auth().currentUser; // 🔑 tekrar al
+      const refreshedUser = auth().currentUser;
 
       if (refreshedUser.emailVerified) {
         await firestore().collection("users").doc(refreshedUser.uid).update({
           verified: true,
         });
         Alert.alert("Başarılı ✅", "Email doğrulandı!");
-        navigation.reset({ index: 0, routes: [{ name: "Vault" }] });
+        // ❌ navigation.replace("Vault") kaldırıldı
+        // App.js -> onAuthStateChanged otomatik Vault’a yönlendirecek
       } else {
         Alert.alert(
           "Henüz Doğrulanmadı",
@@ -80,6 +79,16 @@ export default function VerifyEmailPendingScreen({ navigation }) {
       Alert.alert("Hata", err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // ❌ Çıkış
+  const handleGoLogin = async () => {
+    try {
+      await auth().signOut();
+      // burada da reset gerek yok, App.js null user ile Login/Home stack’i açacak
+    } catch (err) {
+      Alert.alert("Hata", err.message);
     }
   };
 
@@ -126,7 +135,7 @@ export default function VerifyEmailPendingScreen({ navigation }) {
       {/* Giriş Ekranına Dön */}
       <TouchableOpacity
         style={[styles.button, styles.red, isDark && styles.darkShadow]}
-        onPress={() => navigation.replace("Login")}
+        onPress={handleGoLogin}
       >
         <Text style={styles.buttonText}>Giriş Ekranına Dön</Text>
       </TouchableOpacity>

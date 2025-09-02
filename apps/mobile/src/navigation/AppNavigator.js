@@ -69,23 +69,36 @@ export default function AppNavigator({ user }) {
         }}
       >
         {user ? (
-          <>
-            <Stack.Screen
-              name="Vault"
-              component={withTheme(VaultScreen)}
-              options={({ navigation }) =>
-                getVaultHeaderOptions(isDark, toggleTheme, navigation)
-              }
-            />
-            <Stack.Screen
-              name="Settings"
-              component={withTheme(SettingsScreen)}
-              options={{
-                headerTitle: "Ayarlar",
-                headerRight: getHeaderRight(isDark, toggleTheme),
-              }}
-            />
-          </>
+          user.emailVerified ? (
+            <>
+              <Stack.Screen
+                name="Vault"
+                component={withTheme(VaultScreen)}
+                options={({ navigation }) =>
+                  getVaultHeaderOptions(isDark, toggleTheme, navigation)
+                }
+              />
+              <Stack.Screen
+                name="Settings"
+                component={withTheme(SettingsScreen)}
+                options={{
+                  headerTitle: "Ayarlar",
+                  headerRight: getHeaderRight(isDark, toggleTheme),
+                }}
+              />
+            </>
+          ) : (
+            <>
+              <Stack.Screen
+                name="VerifyEmailPending"
+                component={withTheme(VerifyEmailPendingScreen)}
+                options={{
+                  headerTitle: "Email Doğrulama",
+                  headerRight: getHeaderRight(isDark, toggleTheme),
+                }}
+              />
+            </>
+          )
         ) : (
           <>
             <Stack.Screen
@@ -102,14 +115,6 @@ export default function AppNavigator({ user }) {
               component={withTheme(RegisterScreen)}
               options={{
                 headerTitle: "Kayıt Ol",
-                headerRight: getHeaderRight(isDark, toggleTheme),
-              }}
-            />
-            <Stack.Screen
-              name="VerifyEmailPending"
-              component={withTheme(VerifyEmailPendingScreen)}
-              options={{
-                headerTitle: "Email Doğrulama",
                 headerRight: getHeaderRight(isDark, toggleTheme),
               }}
             />
